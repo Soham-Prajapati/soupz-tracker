@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { SCHEDULE, BLOCKS, ALL_PROBLEMS, LLD, AI, EVENTS, PHASES, parse } from './data/schedule.js';
 import { COLLEGE } from './data/tracks.js';
+import { LABS, LAB_ORDER, LAB_START } from './data/labs.js';
+import { RESOURCES, CHANNEL_VERDICTS } from './data/resources.js';
 
 const TRACKS = {
   dsa: 'DSA', contest: 'Contest', lld: 'System Design', ai: 'AI/ML',
@@ -174,7 +176,7 @@ export default function App() {
           <button className="icon-btn" onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} title="Toggle theme">◐</button>
         </div>
         <div className="top-in tabs" style={{ marginTop: 8 }}>
-          {['today','overview','calendar','week','plan','tracks','grades','deadlines'].map(v => (
+          {['today','overview','calendar','week','plan','tracks','labs','subjects','grades','deadlines'].map(v => (
             <button key={v} className={'tab' + (view === v ? ' on' : '')} onClick={() => { setView(v); if (v==='today') setCursor(today); }}>
               {v[0].toUpperCase() + v.slice(1)}
             </button>
@@ -506,6 +508,108 @@ export default function App() {
         </>
       )}
 
+
+      {view === 'labs' && (() => {
+        const weekOf = (i) => { const d = parse(LAB_START); d.setDate(d.getDate() + i*7); return d; };
+        const maxExp = Math.max(...LAB_ORDER.map(k=>LABS[k].exps.length));
+        const curWeek = Math.max(0, Math.floor((parse(today) - parse(LAB_START)) / (7*86400000)));
+        return (
+        <>
+          <div className="hero"><div className="hero-date">One experiment per subject per week</div><h1>Labs &amp; Viva</h1>
+            <div className="hero-sub">Labs start {fmt(LAB_START)}. Viva is asked in-lab and carries ISE marks — the questions below are what they actually ask.</div></div>
+
+          <div className="note g" style={{marginBottom:14}}>
+            <b>Why this matters more than it looks.</b> Lab ISE is 25 marks per subject and <b>26 for CE303</b> — the heaviest single
+            component outside the mini project. It is also the easiest to score full marks on: turn up, submit a working
+            experiment, answer three viva questions. Prep the viva line the night before and this is nearly free marks toward 9+.
+          </div>
+
+          <div className="panel" style={{marginBottom:14}}>
+            <div className="panel-h"><span className="panel-t">Progress by subject</span><span className="panel-v">Week {curWeek+1}</span></div>
+            {LAB_ORDER.map(k=>{
+              const L=LABS[k];
+              const dn=L.exps.filter((_,i)=>done[`lab-${k}-${i}`]).length;
+              return <SBar key={k} name={`${k} — ${L.name}`} done={dn} total={L.exps.length} color={L.color} />;
+            })}
+          </div>
+
+          {Array.from({length:maxExp}).map((_,w)=>{
+            const wd = weekOf(w);
+            const isNow = w === curWeek;
+            return (
+              <div className="panel" key={w} style={{marginBottom:12, borderColor: isNow?'var(--ac)':'var(--line)'}}>
+                <div className="panel-h">
+                  <span className="panel-t">Week {w+1} · from {fmt(isoLocal(wd))}</span>
+                  {isNow && <span className="pill ok">This week</span>}
+                </div>
+                {LAB_ORDER.map(k=>{
+                  const L=LABS[k]; const e=L.exps[w]; if(!e) return null;
+                  const id=`lab-${k}-${w}`; const dn=!!done[id];
+                  return (
+                    <div className="row" key={k}>
+                      <button className="cb" onClick={()=>toggle(id)}
+                        style={{background:dn?'var(--ac)':'',borderColor:dn?'var(--ac)':'',color:dn?'#fff':'transparent'}}>✓</button>
+                      <div className="row-m">
+                        <div className="row-t" style={{textDecoration:dn?'line-through':'none',opacity:dn?.5:1}}>
+                          <span className="pill" style={{marginRight:7,background:L.color,color:'#08100F'}}>{k}</span>{e.t}
+                        </div>
+                        <div className="row-s" style={{marginTop:5}}><b style={{color:'var(--tx)'}}>Viva:</b> {e.viva}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </>);
+      })()}
+
+      {view === 'subjects' && (
+        <>
+          <div className="hero"><div className="hero-date">Faculty is bad — here is the fix</div><h1>Subject Resources</h1>
+            <div className="hero-sub">Verified channels per subject. Links are channel-search URLs, not playlist IDs, so they will not rot.</div></div>
+
+          <div className="note w" style={{marginBottom:14}}>
+            <b>Read this before you start.</b> Two subjects are badly served by free video and you should plan around it now,
+            not in November: <b>Distributed Computing</b> (no channel covers it well — start it earliest) and four specific
+            topics with no good video anywhere — <b>GRASP, ANFIS, ECC, and MPI</b>. For those four, go to the textbook directly
+            rather than losing an evening hunting for a video that does not exist.
+          </div>
+
+          {RESOURCES.map(r => (
+            <div className="panel" key={r.code} style={{marginBottom:12, borderLeft:`3px solid ${r.color}`}}>
+              <div className="panel-h">
+                <span className="panel-t" style={{color:r.color}}>{r.code} · {r.name}</span>
+                {r.verdict==='solved' && <span className="pill ok">solved</span>}
+                {r.verdict==='hard' && <span className="pill hot">hardest</span>}
+              </div>
+              {r.summary && <div className="sub" style={{marginTop:0,marginBottom:12}}>{r.summary}</div>}
+              {r.picks.map((p,i)=>(
+                <div className="row" key={i}>
+                  <div className="row-m">
+                    <div className="row-t">
+                      <span className="pill" style={{marginRight:7}}>{p.tag}</span>{p.t}
+                    </div>
+                    <div className="row-s" style={{marginTop:4}}>{p.note}</div>
+                  </div>
+                  <a className="pill ok" href={p.u} target="_blank" rel="noreferrer">Open</a>
+                </div>
+              ))}
+              {r.gaps && <div className="note w" style={{marginTop:10,fontSize:12.5}}><b>Gap:</b> {r.gaps}</div>}
+            </div>
+          ))}
+
+          <div className="panel">
+            <div className="panel-h"><span className="panel-t">The channels you asked about</span></div>
+            {CHANNEL_VERDICTS.map((c,i)=>(
+              <div className="row" key={i}>
+                <span className="dot" style={{background:c.good?'var(--gd)':'var(--wn)',marginTop:6}} />
+                <div className="row-m"><div className="row-t">{c.n}</div><div className="row-s">{c.v}</div></div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
       {view === 'grades' && (
         <>
           <div className="hero"><div className="hero-date">Target: 9.0+ pointer</div><h1>Grades</h1></div>

@@ -8,6 +8,14 @@ const TRACKS = {
   dsa: 'DSA', contest: 'Contest', lld: 'System Design', ai: 'AI/ML',
   college: 'College', admin: 'Admin', content: 'Content',
 };
+const ACCENTS = [
+  { id:'blue',   n:'Blue',   l:'#0F62FE', l2:'#0043CE', lw:'#E3ECFF', d:'#4589FF', d2:'#78A9FF', dw:'#12203D' },
+  { id:'violet', n:'Violet', l:'#6929C4', l2:'#491D8B', lw:'#EDE5FF', d:'#A56EFF', d2:'#BE95FF', dw:'#1F1533' },
+  { id:'amber',  n:'Amber',  l:'#B26800', l2:'#8A5000', lw:'#FFF3DC', d:'#F1A340', d2:'#FFC46B', dw:'#2E2007' },
+  { id:'rose',   n:'Rose',   l:'#C2185B', l2:'#96114A', lw:'#FFE4EE', d:'#FF7EB6', d2:'#FFAFD2', dw:'#33111F' },
+  { id:'teal',   n:'Teal',   l:'#00A896', l2:'#007F72', lw:'#DEF3F0', d:'#2DD4C4', d2:'#5EEAD9', dw:'#0F2C29' },
+  { id:'slate',  n:'Slate',  l:'#3D4E5C', l2:'#28353F', lw:'#E7EDF2', d:'#93AABF', d2:'#B6C8D8', dw:'#1A222A' },
+];
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -99,12 +107,23 @@ export default function App() {
   const [done, setDone] = useStore('done', {});
   const [pushed, setPushed] = useStore('pushed', {});
   const [view, setView] = useState('today');
+  const [accent, setAccent] = useStore('accent', 'blue');
+  const [popOpen, setPopOpen] = useState(false);
   const [cursor, setCursor] = useState(todayISO());
 
   useEffect(() => {
     if (theme) document.documentElement.setAttribute('data-t', theme);
     else document.documentElement.removeAttribute('data-t');
   }, [theme]);
+
+  useEffect(() => {
+    const A = ACCENTS.find(a => a.id === accent) || ACCENTS[0];
+    const dark = (theme === 'dark') || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const r = document.documentElement.style;
+    r.setProperty('--accent-c', dark ? A.d : A.l);
+    r.setProperty('--accent-c2', dark ? A.d2 : A.l2);
+    r.setProperty('--accent-cw', dark ? A.dw : A.lw);
+  }, [accent, theme]);
 
   const today = todayISO();
   const byDate = useMemo(() => Object.fromEntries(SCHEDULE.map(d => [d.date, d])), []);
@@ -173,7 +192,26 @@ export default function App() {
       <div className="top">
         <div className="top-in">
           <span className="brand">Campaign · Sem V</span>
+          <button className="icon-btn" onClick={() => setPopOpen(o => !o)} title="Appearance">◍</button>
           <button className="icon-btn" onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} title="Toggle theme">◐</button>
+          {popOpen && (
+            <div className="pop">
+              <h4>Accent</h4>
+              <div className="acc" style={{marginBottom:14}}>
+                {ACCENTS.map(a => (
+                  <button key={a.id} onClick={() => setAccent(a.id)} aria-pressed={accent===a.id}
+                    title={a.n} style={{ background: a.l }} />
+                ))}
+              </div>
+              <h4>Theme</h4>
+              <div style={{display:'flex',gap:6}}>
+                {[['light','Light'],['dark','Dark'],[null,'System']].map(([v,n]) => (
+                  <button key={n} className="btn" onClick={() => setTheme(v)}
+                    style={{background: theme===v ? 'var(--ac)' : '', color: theme===v ? '#fff' : ''}}>{n}</button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <div className="top-in tabs" style={{ marginTop: 8 }}>
           {['today','overview','calendar','week','plan','tracks','labs','subjects','grades','deadlines'].map(v => (

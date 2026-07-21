@@ -85,6 +85,19 @@ export function buildSchedule() {
       }
     }
 
+    // --- LeetCode daily challenge (every day, free extra rep) ---
+    if (!isExamWeek) {
+      tasks.push({
+        id: `daily-${dateStr}`,
+        track: 'dsa',
+        title: 'LeetCode Daily Challenge',
+        url: 'https://leetcode.com/problemset/',
+        why: 'Ten minutes, keeps the streak on LeetCode itself, and it is random — so it tests recall rather than the topic you just studied. Do it on your phone in a dead lecture.',
+        meta: 'Daily · counts toward your streak',
+        weight: 1,
+      });
+    }
+
     // --- contest ---
     const c = contestFor(dow, dateStr, phase);
     if (c && !isExamWeek) {

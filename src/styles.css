@@ -3,9 +3,9 @@
 :root{
   --bg:#F4F6F6; --card:#FFF; --card2:#EAEFEF; --line:#DCE4E4; --line2:#C3CFCF;
   --tx:#0E1717; --tx2:#40514F; --tx3:#71827F;
-  --ac:#00A896; --ac2:#007F72; --acw:#DEF3F0;
+  --ac:var(--accent-c,#0F62FE); --ac2:var(--accent-c2,#0043CE); --acw:var(--accent-cw,#E3ECFF);
   --wn:#C2521E; --wnw:#FBEAE2; --gd:#12794C; --gdw:#E1F2E9;
-  --dsa:#00A896; --contest:#7A5AF8; --lld:#C2521E; --ai:#0F7FC4; --college:#71827F; --admin:#B8860B; --content:#C7378F;
+  --dsa:var(--accent-c,#0F62FE); --contest:#7A5AF8; --lld:#C2521E; --ai:#0F7FC4; --college:#71827F; --admin:#B8860B; --content:#C7378F;
   --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
   --sans:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",system-ui,sans-serif;
   --r:10px; --sh:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.04);
@@ -13,17 +13,17 @@
 @media (prefers-color-scheme:dark){:root{
   --bg:#0B1010; --card:#131B1B; --card2:#1B2525; --line:#243030; --line2:#354545;
   --tx:#E8F0EF; --tx2:#A6B8B6; --tx3:#7B8C8A;
-  --ac:#2DD4C4; --ac2:#5EEAD9; --acw:#0F2C29;
+  --ac:var(--accent-c,#4589FF); --ac2:var(--accent-c2,#78A9FF); --acw:var(--accent-cw,#12203D);
   --wn:#F08A5D; --wnw:#2A1610; --gd:#4ADE9B; --gdw:#0D2A1C;
-  --dsa:#2DD4C4; --contest:#A78BFA; --lld:#F08A5D; --ai:#5BB8F5; --college:#7B8C8A; --admin:#E0B341; --content:#F472B6;
+  --dsa:var(--accent-c,#4589FF); --contest:#A78BFA; --lld:#F08A5D; --ai:#5BB8F5; --college:#7B8C8A; --admin:#E0B341; --content:#F472B6;
   --sh:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
 }}
 :root[data-t="dark"]{
   --bg:#0B1010; --card:#131B1B; --card2:#1B2525; --line:#243030; --line2:#354545;
   --tx:#E8F0EF; --tx2:#A6B8B6; --tx3:#7B8C8A;
-  --ac:#2DD4C4; --ac2:#5EEAD9; --acw:#0F2C29;
+  --ac:var(--accent-c,#4589FF); --ac2:var(--accent-c2,#78A9FF); --acw:var(--accent-cw,#12203D);
   --wn:#F08A5D; --wnw:#2A1610; --gd:#4ADE9B; --gdw:#0D2A1C;
-  --dsa:#2DD4C4; --contest:#A78BFA; --lld:#F08A5D; --ai:#5BB8F5; --college:#7B8C8A; --admin:#E0B341; --content:#F472B6;
+  --dsa:var(--accent-c,#4589FF); --contest:#A78BFA; --lld:#F08A5D; --ai:#5BB8F5; --college:#7B8C8A; --admin:#E0B341; --content:#F472B6;
   --sh:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
 }
 :root[data-t="light"]{
@@ -224,3 +224,11 @@ hr{border:none;border-top:1px solid var(--line);margin:14px 0}
 .rl-m{flex:1;min-width:0}
 .rl-t{font-size:13.5px;font-weight:600}
 .rl-s{font-size:11.5px;color:var(--tx3);font-family:var(--mono)}
+
+/* accent picker */
+.acc{display:flex;gap:6px;align-items:center}
+.acc button{width:20px;height:20px;border-radius:99px;border:2px solid transparent;transition:.12s}
+.acc button:hover{transform:scale(1.15)}
+.acc button[aria-pressed="true"]{border-color:var(--tx);transform:scale(1.1)}
+.pop{position:absolute;right:16px;top:52px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:0 8px 32px rgba(0,0,0,.25);z-index:60;min-width:210px}
+.pop h4{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:9px}

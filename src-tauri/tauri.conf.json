@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Campaign",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "me.sohamprajapati.campaign",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
@@ -13,10 +13,11 @@
     "windows": [
       {
         "title": "Campaign",
-        "width": 800,
-        "height": 600,
+        "width": 1280,
+        "height": 860,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "url": "https://campaign-liard.vercel.app"
       }
     ],
     "security": {

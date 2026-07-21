@@ -29,9 +29,9 @@
 :root[data-t="light"]{
   --bg:#F4F6F6; --card:#FFF; --card2:#EAEFEF; --line:#DCE4E4; --line2:#C3CFCF;
   --tx:#0E1717; --tx2:#40514F; --tx3:#71827F;
-  --ac:#00A896; --ac2:#007F72; --acw:#DEF3F0;
+  --ac:var(--accent-c,#0F62FE); --ac2:var(--accent-c2,#0043CE); --acw:var(--accent-cw,#E3ECFF);
   --wn:#C2521E; --wnw:#FBEAE2; --gd:#12794C; --gdw:#E1F2E9;
-  --dsa:#00A896; --contest:#7A5AF8; --lld:#C2521E; --ai:#0F7FC4; --college:#71827F; --admin:#B8860B; --content:#C7378F;
+  --dsa:var(--accent-c,#0F62FE); --contest:#7A5AF8; --lld:#C2521E; --ai:#0F7FC4; --college:#71827F; --admin:#B8860B; --content:#C7378F;
   --sh:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.04);
 }
 

@@ -637,16 +637,7 @@ export default function App() {
             </div>
           ))}
 
-          <div className="panel">
-            <div className="panel-h"><span className="panel-t">The channels you asked about</span></div>
-            {CHANNEL_VERDICTS.map((c,i)=>(
-              <div className="row" key={i}>
-                <span className="dot" style={{background:c.good?'var(--gd)':'var(--wn)',marginTop:6}} />
-                <div className="row-m"><div className="row-t">{c.n}</div><div className="row-s">{c.v}</div></div>
-              </div>
-            ))}
-          </div>
-        </>
+                  </>
       )}
       {view === 'grades' && (
         <>

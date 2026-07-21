@@ -8,6 +8,8 @@ export const parse = (s) => new Date(s + 'T00:00:00');
 const START = '2026-07-22';
 const END = '2027-01-04';
 
+const CF_BAND = { 'Foundation':'800-1000', 'Mid Terms':'800-1000', 'Build & Compete':'1000-1200', 'Exams':'1000-1200', 'Open Ground':'1200-1400' };
+
 function phaseFor(dateStr) {
   return PHASES.find((p) => dateStr >= p.start && dateStr <= p.end) || PHASES[PHASES.length - 1];
 }
@@ -86,20 +88,35 @@ export function buildSchedule() {
     }
 
     // --- Reinforcement: a problem from a block started 10+ days ago (spaced repetition) ---
-    if (pIdx > 6 && !isExamWeek) {
-      const lookback = Math.max(0, pIdx - 10 - (days.length % 7));
+    const reCount = isExamWeek ? 0 : (phase.name === 'Mid Terms' ? 1 : 2);
+    for (let k = 0; k < reCount && pIdx > 6; k++) {
+      const lookback = Math.max(0, pIdx - 10 - (days.length % 7) - k * 4);
       const r = ALL_PROBLEMS[lookback];
       if (r) {
         tasks.push({
-          id: `re-${dateStr}`,
+          id: `re-${dateStr}-${k}`,
           track: 'dsa',
           title: `Re-solve: ${r.n}`,
           url: r.s,
           meta: `Reinforce · ${r.blockName}`,
-          why: 'You have solved this before. Do it again from blank, without notes. If it takes more than 10 minutes you had not actually learned it — and finding that out now is the entire point. This is what stops the eight-month gap from erasing everything.',
+          why: 'Already solved once. Do it from blank, no notes. Phone-friendly — this is your train and dead-lecture problem. If it takes over 10 minutes you had not actually learned it, and finding that out now is the whole point.',
           weight: 1,
         });
       }
+    }
+
+    // --- Codeforces practice: rating band scales with the phase ---
+    if (!isExamWeek) {
+      const band = CF_BAND[phase.name] || '800-1000';
+      tasks.push({
+        id: `cf-${dateStr}`,
+        track: 'contest',
+        title: `Codeforces practice — one problem rated ${band}`,
+        url: `https://codeforces.com/problemset?tags=${band}`,
+        meta: 'Sort by solve count, pick anything unsolved',
+        why: 'LeetCode does not move your Codeforces rating. LeetCode names the pattern for you; Codeforces makes you find it, and that gap is exactly what a contest tests. One a day at this band is what turns into Specialist.',
+        weight: 1,
+      });
     }
 
     // --- LeetCode daily challenge (every day, free extra rep) ---

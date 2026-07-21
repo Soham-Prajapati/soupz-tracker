@@ -85,6 +85,23 @@ export function buildSchedule() {
       }
     }
 
+    // --- Reinforcement: a problem from a block started 10+ days ago (spaced repetition) ---
+    if (pIdx > 6 && !isExamWeek) {
+      const lookback = Math.max(0, pIdx - 10 - (days.length % 7));
+      const r = ALL_PROBLEMS[lookback];
+      if (r) {
+        tasks.push({
+          id: `re-${dateStr}`,
+          track: 'dsa',
+          title: `Re-solve: ${r.n}`,
+          url: r.s,
+          meta: `Reinforce · ${r.blockName}`,
+          why: 'You have solved this before. Do it again from blank, without notes. If it takes more than 10 minutes you had not actually learned it — and finding that out now is the entire point. This is what stops the eight-month gap from erasing everything.',
+          weight: 1,
+        });
+      }
+    }
+
     // --- LeetCode daily challenge (every day, free extra rep) ---
     if (!isExamWeek) {
       tasks.push({

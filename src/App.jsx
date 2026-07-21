@@ -9,10 +9,8 @@ const TRACKS = {
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-const rawToday = () => {
-  const d = new Date(); d.setHours(0,0,0,0);
-  return d.toISOString().slice(0,10);
-};
+export const isoLocal = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const rawToday = () => { const d = new Date(); d.setHours(0,0,0,0); return isoLocal(d); };
 // Clamp into the plan window so the app still renders before the plan starts / after it ends.
 const FIRST = SCHEDULE[0].date;
 const LAST = SCHEDULE[SCHEDULE.length - 1].date;
@@ -65,6 +63,35 @@ function Task({ t, done, onToggle, onPush }) {
   );
 }
 
+
+function Donut({ pct, label, color, size = 74 }) {
+  const r = size / 2 - 6, c = 2 * Math.PI * r;
+  return (
+    <div className="donut">
+      <div className="donut-w" style={{ width: size, height: size }}>
+        <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--card2)" strokeWidth="6" />
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth="6"
+            strokeDasharray={c} strokeDashoffset={c * (1 - pct)} strokeLinecap="round"
+            style={{ transition: 'stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)' }} />
+        </svg>
+        <div className="donut-c">{Math.round(pct * 100)}%</div>
+      </div>
+      <div className="donut-l">{label}</div>
+    </div>
+  );
+}
+
+function SBar({ name, done, total, color }) {
+  const p = total ? done / total : 0;
+  return (
+    <div className="sbar">
+      <div className="sbar-h"><span className="sbar-n">{name}</span><span className="sbar-v">{done}/{total}</span></div>
+      <div className="sbar-t"><i style={{ width: `${p*100}%`, background: color }} /></div>
+    </div>
+  );
+}
+
 export default function App() {
   const [theme, setTheme] = useStore('theme', null);
   const [done, setDone] = useStore('done', {});
@@ -101,7 +128,7 @@ export default function App() {
   const toggle = (id) => setDone(d => ({ ...d, [id]: !d[id] }));
   const push = (id) => {
     const nxt = new Date(parse(cursor)); nxt.setDate(nxt.getDate() + 1);
-    setPushed(p => ({ ...p, [id]: nxt.toISOString().slice(0,10) }));
+    setPushed(p => ({ ...p, [id]: isoLocal(nxt) }));
   };
 
   // progress
@@ -115,7 +142,7 @@ export default function App() {
     let n = 0;
     const d = new Date(parse(today));
     for (let guard = 0; guard < 400; guard++) {
-      const s = d.toISOString().slice(0, 10);
+      const s = isoLocal(d);
       const ts = (byDate[s]?.tasks || []).filter(t => t.track === 'dsa');
       if (ts.length && !ts.some(t => done[t.id])) break;
       if (ts.length) n++;
@@ -129,13 +156,13 @@ export default function App() {
 
   const shift = (n) => {
     const d = new Date(parse(cursor)); d.setDate(d.getDate() + n);
-    setCursor(d.toISOString().slice(0,10));
+    setCursor(isoLocal(d));
   };
 
   const weekDays = useMemo(() => {
     const d = parse(cursor); const out = [];
     const start = new Date(d); start.setDate(d.getDate() - d.getDay());
-    for (let i = 0; i < 7; i++) { const x = new Date(start); x.setDate(start.getDate()+i); out.push(x.toISOString().slice(0,10)); }
+    for (let i = 0; i < 7; i++) { const x = new Date(start); x.setDate(start.getDate()+i); out.push(isoLocal(x)); }
     return out;
   }, [cursor]);
 
@@ -147,7 +174,7 @@ export default function App() {
           <button className="icon-btn" onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} title="Toggle theme">◐</button>
         </div>
         <div className="top-in tabs" style={{ marginTop: 8 }}>
-          {['today','week','plan','tracks','grades','deadlines'].map(v => (
+          {['today','overview','calendar','week','plan','tracks','grades','deadlines'].map(v => (
             <button key={v} className={'tab' + (view === v ? ' on' : '')} onClick={() => { setView(v); if (v==='today') setCursor(today); }}>
               {v[0].toUpperCase() + v.slice(1)}
             </button>
@@ -183,22 +210,186 @@ export default function App() {
             <button className="btn" onClick={() => shift(1)}>Next →</button>
           </div>
 
-          {Object.keys(TRACKS).map(k => {
-            const ts = tasks.filter(t => t.track === k);
-            if (!ts.length) return null;
-            return (
-              <div className="group" key={k}>
-                <div className="group-h"><span className={'dot k-' + k} style={{ marginTop:0 }} />{TRACKS[k]}</div>
-                {ts.map(t => (
-                  <Task key={t.id} t={t} done={!!done[t.id]} onToggle={() => toggle(t.id)} onPush={() => push(t.id)} />
-                ))}
+          <div className="shell">
+            <div>
+              {Object.keys(TRACKS).map(k => {
+                const ts = tasks.filter(t => t.track === k);
+                if (!ts.length) return null;
+                return (
+                  <div className="group" key={k}>
+                    <div className="group-h"><span className={'dot k-' + k} style={{ marginTop:0 }} />{TRACKS[k]}</div>
+                    <div className="taskgrid">
+                      {ts.map(t => (
+                        <Task key={t.id} t={t} done={!!done[t.id]} onToggle={() => toggle(t.id)} onPush={() => push(t.id)} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+              {!tasks.length && <div className="empty">Nothing scheduled. Rest day.</div>}
+            </div>
+            <div className="side">
+              <div className="panel">
+                <div className="panel-h"><span className="panel-t">Tracks</span></div>
+                <div className="donuts">
+                  <Donut pct={solved/ALL_PROBLEMS.length} label="DSA" color="var(--dsa)" />
+                  <Donut pct={lldDone/LLD.units.length} label="Sys Design" color="var(--lld)" />
+                  <Donut pct={aiDone/AI.units.length} label="AI/ML" color="var(--ai)" />
+                </div>
               </div>
-            );
-          })}
-          {!tasks.length && <div className="empty">Nothing scheduled. Rest day.</div>}
+              <div className="panel">
+                <div className="panel-h"><span className="panel-t">Next up</span></div>
+                <div className="rail">
+                  {upcoming.slice(0,5).map((e,i) => (
+                    <div className="rl" key={i}>
+                      <span className={'rl-d' + (daysBetween(today, e.d) <= 7 ? ' on' : '')} />
+                      <div className="rl-m">
+                        <div className="rl-t">{e.t.length > 46 ? e.t.slice(0,44)+'…' : e.t}</div>
+                        <div className="rl-s">{daysBetween(today, e.d)}d · {fmt(e.d)}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </>
       )}
 
+
+      {view === 'overview' && (() => {
+        const totalTasks = SCHEDULE.reduce((a,d)=>a+d.tasks.length,0);
+        const doneTasks = Object.values(done).filter(Boolean).length;
+        const elapsed = SCHEDULE.filter(d=>d.date<=today).length;
+        const heat = SCHEDULE.map(d=>{
+          const ts=d.tasks.filter(t=>t.track==='dsa');
+          const dn=ts.filter(t=>done[t.id]).length;
+          return {date:d.date,p:ts.length?dn/ts.length:0,past:d.date<today};
+        });
+        return (
+        <>
+          <div className="hero"><div className="hero-date">Everything at once</div><h1>Overview</h1>
+            <div className="hero-sub">What you are preparing for, and how far along it is.</div></div>
+
+          <div className="ovgrid">
+            <div className="panel"><div className="panel-t">Problems solved</div>
+              <div className="big" style={{marginTop:8}}>{solved}<small> / {ALL_PROBLEMS.length}</small></div>
+              <div className="sbar-t" style={{marginTop:10}}><i style={{width:`${(solved/ALL_PROBLEMS.length)*100}%`,background:'var(--dsa)'}}/></div>
+              <div className="sub">Target ~300 by January, solved properly and logged. You started at 33.</div></div>
+            <div className="panel"><div className="panel-t">Day</div>
+              <div className="big" style={{marginTop:8}}>{elapsed}<small> / {SCHEDULE.length}</small></div>
+              <div className="sbar-t" style={{marginTop:10}}><i style={{width:`${(elapsed/SCHEDULE.length)*100}%`,background:'var(--ac)'}}/></div>
+              <div className="sub">22 Jul 2026 → 4 Jan 2027. Ends right before even semester starts.</div></div>
+            <div className="panel"><div className="panel-t">Streak</div>
+              <div className="big" style={{marginTop:8}}>{streak}<small> days</small></div>
+              <div className="sub" style={{marginTop:12}}>{streak>0?'Keep it alive. One problem counts.':'The floor is one problem a day. That is the whole rule.'}</div></div>
+            <div className="panel"><div className="panel-t">All tasks</div>
+              <div className="big" style={{marginTop:8}}>{doneTasks}<small> / {totalTasks}</small></div>
+              <div className="sbar-t" style={{marginTop:10}}><i style={{width:`${(doneTasks/totalTasks)*100}%`,background:'var(--contest)'}}/></div>
+              <div className="sub">Across DSA, contests, system design, AI, college and admin.</div></div>
+          </div>
+
+          <div className="shell">
+            <div style={{display:'flex',flexDirection:'column',gap:12}}>
+              <div className="panel">
+                <div className="panel-h"><span className="panel-t">DSA blocks</span><span className="panel-v">{BLOCKS.filter(b=>b.problems.every(p=>done['p-'+p.n])).length}/{BLOCKS.length} complete</span></div>
+                {BLOCKS.map(b=>(<SBar key={b.id} name={b.name} done={b.problems.filter(p=>done['p-'+p.n]).length} total={b.problems.length} color="var(--dsa)" />))}
+              </div>
+              <div className="panel">
+                <div className="panel-h"><span className="panel-t">Consistency — every day of the plan</span></div>
+                <div className="heat">
+                  {heat.map(h=>(<div key={h.date} className="hc" title={`${h.date} — ${Math.round(h.p*100)}%`}
+                    style={{background:h.p>0?`color-mix(in srgb, var(--dsa) ${20+h.p*80}%, var(--card2))`:(h.past?'var(--wnw)':'var(--card2)')}} />))}
+                </div>
+                <div className="heat-k"><i style={{background:'var(--card2)'}}/>upcoming<i style={{background:'var(--wnw)'}}/>missed<i style={{background:'var(--dsa)'}}/>done</div>
+              </div>
+            </div>
+            <div className="side">
+              <div className="panel">
+                <div className="panel-h"><span className="panel-t">Other tracks</span></div>
+                <SBar name="System Design (LLD)" done={lldDone} total={LLD.units.length} color="var(--lld)" />
+                <SBar name="AI / ML" done={aiDone} total={AI.units.length} color="var(--ai)" />
+                <SBar name="Contests entered" done={contestsDone} total={40} color="var(--contest)" />
+              </div>
+              <div className="panel">
+                <div className="panel-h"><span className="panel-t">What this is for</span></div>
+                <div className="sub" style={{marginTop:0}}>
+                  <b style={{color:'var(--tx)'}}>Dec 2026:</b> Codeforces Specialist (1400).<br/>
+                  <b style={{color:'var(--tx)'}}>Jan 2027:</b> Expert (1600) if December goes well.<br/>
+                  <b style={{color:'var(--tx)'}}>Graduation:</b> Candidate Master (1900) — top 2.7%, and the rating where quant firms read a non-IIT resume.<br/><br/>
+                  <b style={{color:'var(--tx)'}}>This sem:</b> 9+ pointer, PR1 + M132 maxed, Adobe + SIH entered, Optiver applied.
+                </div>
+              </div>
+              <div className="panel">
+                <div className="panel-h"><span className="panel-t">Phases</span></div>
+                <div className="rail">
+                  {PHASES.map((p,i)=>{
+                    const on = today >= p.start;
+                    return (<div className="rl" key={i}><span className={'rl-d'+(on?' on':'')}/>
+                      <div className="rl-m"><div className="rl-t">{p.name}</div><div className="rl-s">{fmt(p.start)} → {fmt(p.end)} · {p.pd}/day</div></div></div>);
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>);
+      })()}
+
+      {view === 'calendar' && (() => {
+        const cd = parse(cursor);
+        const y = cd.getFullYear(), m = cd.getMonth();
+        const first = new Date(y, m, 1), startPad = first.getDay();
+        const cells = [];
+        for (let i=0;i<startPad;i++) cells.push(null);
+        const dim = new Date(y, m+1, 0).getDate();
+        for (let i=1;i<=dim;i++) cells.push(new Date(y,m,i));
+        const jump = (n)=>{ const d=new Date(y,m+n,1); setCursor(isoLocal(d)); };
+        return (
+        <>
+          <div className="hero"><div className="hero-date">Month view</div><h1>Calendar</h1></div>
+          <div className="cal-nav">
+            <span className="cal-m">{MON[m]} {y}</span>
+            <button className="btn" onClick={()=>jump(-1)}>←</button>
+            <button className="btn" onClick={()=>setCursor(today)}>Today</button>
+            <button className="btn" onClick={()=>jump(1)}>→</button>
+          </div>
+          <div className="cal" style={{marginBottom:6}}>
+            {DOW.map(d=><div className="cal-hd" key={d}>{d}</div>)}
+          </div>
+          <div className="cal">
+            {cells.map((d,i)=>{
+              if(!d) return <div key={i} className="cd out" />;
+              const ds = isoLocal(d);
+              const ts = tasksFor(ds);
+              const dn = ts.filter(t=>done[t.id]).length;
+              const ev = EVENTS.some(e=>e.d===ds && (e.type==='deadline'||e.type==='exam'));
+              const tracks=[...new Set(ts.map(t=>t.track))];
+              return (
+                <div key={i} className={'cd'+(ds===today?' today':'')+(ev?' ev':'')}
+                     onClick={()=>{setCursor(ds);setView('today');}}>
+                  <div className="cd-n">{d.getDate()}</div>
+                  <div className="cd-b">{tracks.slice(0,6).map(t=><i key={t} className={'k-'+t} />)}</div>
+                  {ts.length>0 && <div className="cd-f" style={{width:`${(dn/ts.length)*100}%`}} />}
+                </div>
+              );
+            })}
+          </div>
+          <div className="leg">
+            {Object.entries(TRACKS).map(([k,v])=>(<span key={k}><i className={'k-'+k}/>{v}</span>))}
+            <span><i style={{background:'var(--wn)'}}/>deadline / exam</span>
+          </div>
+          <div className="panel" style={{marginTop:16}}>
+            <div className="panel-h"><span className="panel-t">This month's fixed dates</span></div>
+            {EVENTS.filter(e=>e.d.startsWith(`${y}-${String(m+1).padStart(2,'0')}`)).map((e,i)=>(
+              <div className="row" key={i}>
+                <span className="pill">{fmt(e.d)}</span>
+                <div className="row-m"><div className="row-t">{e.t}</div>{e.why && <div className="row-s">{e.why}</div>}</div>
+                {e.u && <a className="pill ok" href={e.u} target="_blank" rel="noreferrer">Open</a>}
+              </div>
+            ))}
+          </div>
+        </>);
+      })()}
       {view === 'week' && (
         <>
           <div className="hero"><div className="hero-date">This week</div><h1>Week view</h1></div>

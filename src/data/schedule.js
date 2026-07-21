@@ -1,7 +1,7 @@
 import { BLOCKS, ALL_PROBLEMS } from './dsa.js';
 import { LLD, AI, EVENTS, PHASES } from './tracks.js';
 
-const iso = (d) => d.toISOString().slice(0, 10);
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 export const parse = (s) => new Date(s + 'T00:00:00');
 

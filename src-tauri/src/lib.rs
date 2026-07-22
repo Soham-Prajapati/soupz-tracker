@@ -52,6 +52,7 @@ fn toggle_panel(app: &tauri::AppHandle, icon: tauri::PhysicalPosition<f64>) {
         if w.is_visible().unwrap_or(false) {
             let _ = w.hide();
         } else {
+            let _ = w.set_visible_on_all_workspaces(true);
             place_panel(&w, icon);
             let _ = w.show();
             let _ = w.set_focus();
@@ -81,6 +82,8 @@ fn toggle_panel(app: &tauri::AppHandle, icon: tauri::PhysicalPosition<f64>) {
     .build();
 
     if let Some(w) = app.get_webview_window("panel") {
+        // Join every space and float above fullscreen apps, like a real menu bar popover.
+        let _ = w.set_visible_on_all_workspaces(true);
         place_panel(&w, icon);
         let _ = w.show();
         let _ = w.set_focus();

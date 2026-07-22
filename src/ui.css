@@ -182,3 +182,24 @@ body.panel-mode{background:transparent!important}
 .pnl-go{flex:none;font-family:var(--mono);font-size:8.5px;letter-spacing:.09em;font-weight:700;
   color:var(--ac2);opacity:0;transition:opacity .1s;padding-top:2px}
 .pnl-r:hover .pnl-go{opacity:1}
+
+/* clickable academics modules */
+.mod-h{display:flex;align-items:baseline;gap:8px;width:100%;text-align:left;cursor:pointer;padding:0}
+.mod-cv{margin-left:auto;font-family:var(--mono);font-size:14px;color:var(--tx3);flex:none;line-height:1}
+.mod:hover .mod-cv{color:var(--ac)}
+.mod.open{border-color:var(--ac)}
+button.pass{cursor:pointer;text-align:left;width:100%;border:none;background:none;padding:0}
+button.pass:hover .pass-b{outline:1px solid var(--ac);outline-offset:1px}
+button.pass:hover .pass-l{color:var(--ac2)}
+.mod-vids{list-style:none;padding:8px 0 2px;margin:8px 0 0;border-top:1px solid var(--line);
+  display:flex;flex-direction:column;gap:1px}
+.mod-vids a{display:flex;gap:9px;align-items:baseline;padding:5px 7px;border-radius:6px;font-size:12px}
+.mod-vids a:hover{background:var(--card2)}
+.mv-n{font-family:var(--mono);font-size:9.5px;color:var(--tx3);width:16px;flex:none}
+.mv-t{flex:1;min-width:0;line-height:1.35}
+.mv-m{font-family:var(--mono);font-size:10px;color:var(--ac2);flex:none;font-weight:700}
+:root{--aptitude:#0F9B8E}
+@media (prefers-color-scheme:dark){:root{--aptitude:#3DD9C9}}
+:root[data-t="dark"]{--aptitude:#3DD9C9}
+:root[data-t="light"]{--aptitude:#0F9B8E}
+.k-aptitude{background:var(--aptitude)}

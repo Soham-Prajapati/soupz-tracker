@@ -20,7 +20,7 @@ import { RESOURCES, CHANNEL_VERDICTS } from './data/resources.js';
 
 const TRACKS = {
   dsa: 'DSA', contest: 'Contest', lld: 'System Design', ai: 'AI/ML',
-  college: 'College', admin: 'Admin', content: 'Content',
+  college: 'College', aptitude: 'Aptitude', admin: 'Admin', content: 'Content',
 };
 const ACCENTS = [
   { id:'blue',   n:'Blue',   l:'#0F62FE', l2:'#0043CE', lw:'#E3ECFF', d:'#4589FF', d2:'#78A9FF', dw:'#12203D' },
@@ -297,6 +297,21 @@ export default function App() {
   const [sync, setSync] = useState('connecting');
   const [opps, setOpps] = useState([]);
   const [openRow, setOpenRow] = useState(null);
+  const [openMod, setOpenMod] = useState(null);
+
+  // Every scheduled task id for one module's pass, so a click marks the whole pass.
+  const modTaskIds = (code, m, pass) => {
+    const learn = `${code} M${m} \u00b7`;
+    const rev = `Revise ${code} M${m} \u00b7`;
+    const out = [];
+    SCHEDULE.forEach(d => d.tasks.forEach(t => {
+      if (t.track !== 'college') return;
+      if (pass === 1 && t.title.startsWith(learn)) out.push(t.id);
+      else if (pass === 2 && t.id.startsWith('rev7-') && t.title.startsWith(rev)) out.push(t.id);
+      else if (pass === 3 && t.id.startsWith('rev21-') && t.title.startsWith(rev)) out.push(t.id);
+    }));
+    return out;
+  };
 
   // Pull shared state on load; seed the cloud from local on first run.
   useEffect(() => {
@@ -417,29 +432,8 @@ export default function App() {
         <div className="top-in">
           <span className="brand">Campaign · Sem V</span>
           <span className={'synced s-' + sync} title={
-            sync==='ok' ? 'Synced — progress shared across laptop, phone and the Mac app'
-            : sync==='offline' ? 'Offline — changes saved locally, will not sync until reconnected'
-            : 'Connecting…'} />
-          <button className="icon-btn" onClick={() => setPopOpen(o => !o)} title="Appearance">◍</button>
-          <button className="icon-btn" onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} title="Toggle theme">◐</button>
-          {popOpen && (
-            <div className="pop">
-              <h4>Accent</h4>
-              <div className="acc" style={{marginBottom:14}}>
-                {ACCENTS.map(a => (
-                  <button key={a.id} onClick={() => setAccent(a.id)} aria-pressed={accent===a.id}
-                    title={a.n} style={{ background: a.l }} />
-                ))}
-              </div>
-              <h4>Theme</h4>
-              <div style={{display:'flex',gap:6}}>
-                {[['light','Light'],['dark','Dark'],[null,'System']].map(([v,n]) => (
-                  <button key={n} className="btn" onClick={() => setTheme(v)}
-                    style={{background: theme===v ? 'var(--ac)' : '', color: theme===v ? '#fff' : ''}}>{n}</button>
-                ))}
-              </div>
-            </div>
-          )}
+            sync==='ok' ? 'Synced across app, browser and phone'
+            : sync==='offline' ? 'Offline — saving locally' : 'Connecting'} />
         </div>
         <div className="top-in tabs" style={{ marginTop: 8 }}>
           {['today','academics','overview','calendar','week','plan','tracks','labs','subjects','grades','deadlines'].map(v => (
@@ -930,26 +924,42 @@ export default function App() {
                   {mods.map(m => {
                     const st = stat[`${code}-${m.m}`] || { 1:[0,0], 2:[0,0], 3:[0,0] };
                     return (
-                      <div className="mod" key={m.m}>
-                        <div className="mod-h">
+                      <div className={'mod' + (openMod === code + '-' + m.m ? ' open' : '')} key={m.m}>
+                        <button className="mod-h" onClick={() => setOpenMod(o => o === code + '-' + m.m ? null : code + '-' + m.m)}>
                           <span className="mod-n">M{m.m}</span>
                           <span className="mod-t">{m.name}</span>
                           <span className="mod-d">{hm(m.seconds)}</span>
-                        </div>
+                          <span className="mod-cv">{openMod === code + '-' + m.m ? '\u2013' : '+'}</span>
+                        </button>
                         {m.topics && <div className="mod-tp">{m.topics}</div>}
                         <div className="passes">
                           {[1,2,3].map(p => {
                             const [d0,t0] = st[p];
                             const full = t0 && d0 === t0;
+                            const ids = modTaskIds(code, m.m, p);
                             return (
-                              <div key={p} className={'pass' + (full ? ' full' : d0 ? ' part' : '')}
-                                   title={`Pass ${p}: ${d0}/${t0} sessions done`}>
+                              <button key={p} className={'pass' + (full ? ' full' : d0 ? ' part' : '')}
+                                   onClick={() => { const mark = !full; ids.forEach(id => { if (!!done[id] !== mark) toggle(id); }); }}
+                                   title={full ? 'Click to unmark this pass' : `Mark pass ${p} done (${d0}/${t0} sessions)`}>
                                 <span className="pass-l">{p === 1 ? 'Learn' : p === 2 ? '+1 wk' : '+3 wk'}</span>
                                 <div className="pass-b"><i style={{ width: `${t0 ? (d0/t0)*100 : 0}%` }} /></div>
-                              </div>
+                              </button>
                             );
                           })}
                         </div>
+                        {openMod === code + '-' + m.m && (
+                          <ol className="mod-vids">
+                            {(m.sessions || []).flatMap(ss => ss.items || []).map((v, i) => (
+                              <li key={i}>
+                                <a href={v.url} target="_blank" rel="noreferrer">
+                                  <span className="mv-n">{i + 1}</span>
+                                  <span className="mv-t">{v.title}</span>
+                                  <span className="mv-m">{v.m}m</span>
+                                </a>
+                              </li>
+                            ))}
+                          </ol>
+                        )}
                       </div>
                     );
                   })}

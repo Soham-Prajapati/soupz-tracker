@@ -3,12 +3,13 @@ import { LLD, AI, EVENTS, PHASES } from './tracks.js';
 import { ACADEMICS, SUBJECT_ORDER } from './academics.js';
 import { DSA_VIDEOS } from './dsavideos.js';
 import { CF_POOL } from './codeforces.js';
+import { APTITUDE } from './aptitude.js';
 
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 export const parse = (s) => new Date(s + 'T00:00:00');
 
-const START = '2026-07-22';
+const START = '2026-07-27';
 const END = '2027-01-04';
 // Last day that can carry a NEW module. Set so that the final session's +21 revision
 // still lands before the 23 Nov theory exams, and so practical exams (2-6 Nov) are clear.

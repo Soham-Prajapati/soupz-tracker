@@ -14,10 +14,9 @@
       {
         "title": "Campaign",
         "width": 1280,
-        "height": 860,
+        "height": 880,
         "resizable": true,
-        "fullscreen": false,
-        "url": "https://campaign-liard.vercel.app"
+        "fullscreen": false
       }
     ],
     "security": {

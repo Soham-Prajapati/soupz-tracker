@@ -131,6 +131,96 @@ function SBar({ name, done, total, color }) {
   );
 }
 
+function Settings({ theme, setTheme, accent, setAccent, sync, done }) {
+  const solved = ALL_PROBLEMS.filter(p => done['p-' + p.n]).length;
+  return (
+    <div className="app" style={{ maxWidth: 560, padding: '22px 20px 40px' }}>
+      <div className="hd" style={{ marginBottom: 20 }}>
+        <div className="hd-l">
+          <div className="hd-eyebrow">Preferences</div>
+          <h1 style={{ fontSize: 26 }}>Settings</h1>
+        </div>
+      </div>
+      <div className="pn" style={{ marginBottom: 12 }}>
+        <div className="pn-h">Appearance</div>
+        <div className="pn-b">
+          <div className="mb-n" style={{ marginBottom: 9 }}>Accent</div>
+          <div className="acc" style={{ marginBottom: 18 }}>
+            {ACCENTS.map(a => (
+              <button key={a.id} onClick={() => setAccent(a.id)} aria-pressed={accent === a.id}
+                title={a.n} style={{ background: a.l }} />
+            ))}
+          </div>
+          <div className="mb-n" style={{ marginBottom: 9 }}>Theme</div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {[['light','Light'],['dark','Dark'],[null,'System']].map(([v, n]) => (
+              <button key={n} className="btn" onClick={() => setTheme(v)}
+                style={{ background: theme === v ? 'var(--ac)' : '', color: theme === v ? '#fff' : '' }}>{n}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="pn" style={{ marginBottom: 12 }}>
+        <div className="pn-h">Sync</div>
+        <div className="pn-b">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 8 }}>
+            <span className={'synced s-' + sync} />
+            <b style={{ fontSize: 13.5 }}>{sync === 'ok' ? 'Connected' : sync === 'offline' ? 'Offline' : 'Connecting'}</b>
+          </div>
+          <div className="tr-s" style={{ lineHeight: 1.55 }}>
+            {sync === 'ok'
+              ? 'Progress is shared between this Mac app, your browser and your phone. Tick something in one place and it appears everywhere.'
+              : sync === 'offline'
+              ? 'Changes are being saved on this device only. They will upload once you are back online.'
+              : 'Checking the connection.'}
+          </div>
+        </div>
+      </div>
+      <div className="pn">
+        <div className="pn-h">Progress</div>
+        <div className="pn-b">
+          <SBar name="DSA problems" done={solved} total={ALL_PROBLEMS.length} color="var(--dsa)" />
+          <SBar name="System design" done={LLD.units.filter((u,i)=>done['lld-'+(i+1)]).length} total={LLD.units.length} color="var(--lld)" />
+          <SBar name="AI / ML" done={AI.units.filter((u,i)=>done['ai-'+(i+1)]).length} total={AI.units.length} color="var(--ai)" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Panel({ day, tasks, done, toggle, today }) {
+  const dn = tasks.filter(t => done[t.id]).length;
+  const byTrack = {};
+  tasks.forEach(t => { (byTrack[t.track] = byTrack[t.track] || []).push(t); });
+  return (
+    <div style={{ padding: '14px 14px 20px', maxHeight: '100vh', overflowY: 'auto' }}>
+      <div className="hd-eyebrow" style={{ marginBottom: 6 }}>{fmt(today)} · {day.phase}</div>
+      <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-.03em', marginBottom: 10 }}>
+        <span style={{ fontFamily: 'var(--mono)', color: 'var(--ac)' }}>{dn}</span>
+        <span style={{ color: 'var(--tx3)' }}> / {tasks.length}</span> done
+      </h1>
+      <div className="seg" style={{ margin: '0 0 14px' }}>
+        {tasks.map(t => (<i key={t.id} className={done[t.id] ? 'on' : ''} style={{ '--sc': 'var(--' + t.track + ')' }} />))}
+      </div>
+      {Object.entries(byTrack).map(([k, ts]) => (
+        <div className="tg" key={k} style={{ marginBottom: 9 }}>
+          <div className="tg-h">
+            <span className="kdot" style={{ background: 'var(--' + k + ')' }} />{TRACKS[k]}
+            <span className="ct">{ts.filter(t => done[t.id]).length}/{ts.length}</span>
+          </div>
+          {ts.map(t => (
+            <div className={'tr' + (done[t.id] ? ' on' : '')} key={t.id}>
+              <button className="tr-cb" onClick={() => toggle(t.id)}>OK</button>
+              <div className="tr-m"><div className="tr-t" style={{ fontSize: 13 }}>{t.title}</div></div>
+              {t.url && <a className="ib go" href={t.url} target="_blank" rel="noreferrer" title="Open">GO</a>}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function App() {
   const [theme, setTheme] = useStore('theme', null);
   const [done, setDone] = useStore('done', {});
@@ -243,6 +333,14 @@ export default function App() {
     for (let i = 0; i < 7; i++) { const x = new Date(start); x.setDate(start.getDate()+i); out.push(isoLocal(x)); }
     return out;
   }, [cursor]);
+
+  const winMode = new URLSearchParams(location.search).get('window');
+  if (winMode === 'settings') {
+    return <Settings theme={theme} setTheme={setTheme} accent={accent} setAccent={setAccent} sync={sync} done={done} />;
+  }
+  if (winMode === 'panel') {
+    return <Panel day={byDate[today] || SCHEDULE[0]} tasks={tasksFor(today)} done={done} toggle={toggle} today={today} />;
+  }
 
   return (
     <div className="app">

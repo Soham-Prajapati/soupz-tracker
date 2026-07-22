@@ -59,11 +59,15 @@ fn toggle_panel(app: &tauri::AppHandle) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::default().build())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
         .setup(|app| {
             let handle = app.handle().clone();
 
             // ---- App menu: adds Settings (Cmd+,) next to the standard items ----
-            let settings_item = MenuItem::with_id(app, "settings", "Settings…", true, Some("CmdOrCtrl+,"))?;
+            let settings_item = MenuItem::with_id(app, "settings", "Settings…", true, Some("CmdOrCtrl+Comma"))?;
             let app_submenu = Submenu::with_items(
                 app,
                 "Campaign",
@@ -139,6 +143,16 @@ pub fn run() {
 
             let _ = handle;
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            // Closing the main window hides it instead of quitting: the tray icon
+            // stays live, the way Docker and Wispr Flow behave.
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                if window.label() == "main" {
+                    let _ = window.hide();
+                    api.prevent_close();
+                }
+            }
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

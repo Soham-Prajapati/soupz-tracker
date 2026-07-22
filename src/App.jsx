@@ -3,6 +3,9 @@ import { SCHEDULE, BLOCKS, ALL_PROBLEMS, LLD, AI, EVENTS, PHASES, parse, ACADEMI
 import { COLLEGE } from './data/tracks.js';
 import { LABS, LAB_ORDER, LAB_START } from './data/labs.js';
 import * as Sync from './sync.js';
+import { enable as autoOn, disable as autoOff, isEnabled as autoIs } from '@tauri-apps/plugin-autostart';
+
+const isDesktop = () => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 import { RESOURCES, CHANNEL_VERDICTS } from './data/resources.js';
 
 const TRACKS = {
@@ -133,6 +136,20 @@ function SBar({ name, done, total, color }) {
 
 function Settings({ theme, setTheme, accent, setAccent, sync, done }) {
   const solved = ALL_PROBLEMS.filter(p => done['p-' + p.n]).length;
+  const [launch, setLaunch] = useState(null);
+  const desktop = isDesktop();
+
+  useEffect(() => {
+    if (!desktop) return;
+    autoIs().then(setLaunch).catch(() => setLaunch(false));
+  }, [desktop]);
+
+  const toggleLaunch = async () => {
+    try {
+      if (launch) { await autoOff(); setLaunch(false); }
+      else { await autoOn(); setLaunch(true); }
+    } catch {}
+  };
   return (
     <div className="app" style={{ maxWidth: 560, padding: '22px 20px 40px' }}>
       <div className="hd" style={{ marginBottom: 20 }}>
@@ -160,6 +177,26 @@ function Settings({ theme, setTheme, accent, setAccent, sync, done }) {
           </div>
         </div>
       </div>
+      {desktop && (
+        <div className="pn" style={{ marginBottom: 12 }}>
+          <div className="pn-h">Startup</div>
+          <div className="pn-b">
+            <div className="sw-row">
+              <div>
+                <div className="mb-n">Open at login</div>
+                <div className="tr-s" style={{ marginTop: 3 }}>
+                  Campaign starts with your Mac and sits in the menu bar.
+                </div>
+              </div>
+              <button className={'sw' + (launch ? ' on' : '')} onClick={toggleLaunch}
+                role="switch" aria-checked={!!launch} disabled={launch === null}>
+                <i />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="pn" style={{ marginBottom: 12 }}>
         <div className="pn-h">Sync</div>
         <div className="pn-b">
@@ -176,6 +213,21 @@ function Settings({ theme, setTheme, accent, setAccent, sync, done }) {
           </div>
         </div>
       </div>
+      {desktop && (
+        <div className="pn" style={{ marginBottom: 12 }}>
+          <div className="pn-h">Shortcuts</div>
+          <div className="pn-b">
+            <div className="kb-row"><span>Settings</span><kbd>⌘ ,</kbd></div>
+            <div className="kb-row"><span>Hide window</span><kbd>⌘ H</kbd></div>
+            <div className="kb-row"><span>Quit</span><kbd>⌘ Q</kbd></div>
+            <div className="tr-s" style={{ marginTop: 10, lineHeight: 1.55 }}>
+              Closing the window keeps Campaign running in the menu bar. Click the icon there
+              for today's tasks, or Quit to close it fully.
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="pn">
         <div className="pn-h">Progress</div>
         <div className="pn-b">

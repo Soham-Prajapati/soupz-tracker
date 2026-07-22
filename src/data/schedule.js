@@ -5,6 +5,22 @@ import { DSA_VIDEOS } from './dsavideos.js';
 import { CF_POOL } from './codeforces.js';
 import { APTITUDE } from './aptitude.js';
 
+// Dedicated revision windows. Without these the plan teaches modules but never
+// schedules the consolidation that actually converts into marks.
+const SUBJ = ['CE301 Distributed Computing','CE302 Software Engineering','CE303 AI & Soft Computing',
+  'CE304 Theory of Computation','CE305 Cryptography & Network Security','M132 UI/UX'];
+const EXAM_PREP = [
+  { from:'2026-08-31', to:'2026-09-06', label:'Mid-term revision', subjects:SUBJ,
+    meta:'~45 min · past papers + your own notes',
+    why:'Mid-terms are 7-11 Sep and worth 15-20 marks each. Two focused days per subject beats a week of drifting. Work past papers, not videos — you have already watched the videos.' },
+  { from:'2026-10-26', to:'2026-11-01', label:'Practical exam prep', subjects:SUBJ,
+    meta:'~40 min · re-run experiments + viva questions',
+    why:'Practicals are 2-6 Nov. Re-run each experiment so it works first time, and read the viva questions on the Labs tab the night before. Lab ISE is 25 marks per subject and 26 for CE303.' },
+  { from:'2026-11-07', to:'2026-11-22', label:'Theory revision', subjects:SUBJ,
+    meta:'~90 min · full module sweep',
+    why:'Preparation leave. Every module has been seen three times by now, so this is genuine revision rather than first contact. Prioritise the self-study modules in CE301, CE302, CE303 and CE305 — never lectured, still examinable.' },
+];
+
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 export const parse = (s) => new Date(s + 'T00:00:00');
@@ -263,6 +279,36 @@ export function buildSchedule() {
 
     /* ---------------- LeetCode daily ---------------- */
     if (!isExamWeek) {
+    // --- Aptitude: rotates topics Mon-Fri. The round that eliminates people
+    // before anyone reads their code, and the most trainable thing here. ---
+    if (!isExamWeek && dow >= 1 && dow <= 5) {
+      const t = APTITUDE.topics[days.length % APTITUDE.topics.length];
+      tasks.push({
+        id: `apt-${dateStr}`,
+        track: 'aptitude',
+        title: `Aptitude: ${t.n}`,
+        url: 'https://www.indiabix.com/',
+        meta: `${t.tag} · ~20 min · then 2 min Zetamac`,
+        why: (t.note ? t.note + ' ' : '') + 'One IndiaBIX topic set, then two minutes of Zetamac arithmetic. Doable in a dead lecture.',
+        weight: 1,
+      });
+    }
+
+    // --- Exam preparation: real revision blocks, not a vague "study" line.
+    // Grades are lost by meeting a subject for the first time in prep leave. ---
+    EXAM_PREP.forEach((w, i) => {
+      if (dateStr < w.from || dateStr > w.to) return;
+      const subj = w.subjects[(days.length + i) % w.subjects.length];
+      tasks.push({
+        id: `prep-${dateStr}-${i}`,
+        track: 'college',
+        title: `${w.label}: ${subj}`,
+        meta: w.meta,
+        why: w.why,
+        weight: 1,
+      });
+    });
+
       tasks.push({ id: `daily-${dateStr}`, track: 'dsa', title: 'LeetCode Daily Challenge',
         url: 'https://leetcode.com/problemset/',
         why: 'Ten minutes, keeps the streak on LeetCode itself, and it is random — so it tests recall rather than the topic you just studied. Do it on your phone in a dead lecture.',

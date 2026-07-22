@@ -30,12 +30,27 @@ fn show_main(app: &tauri::AppHandle) {
     }
 }
 
+/// Place the panel directly beneath the menu bar icon, nudged left so it stays
+/// on screen when the icon sits near the right edge.
+fn place_panel(w: &tauri::WebviewWindow, icon: tauri::PhysicalPosition<f64>) {
+    let scale = w.scale_factor().unwrap_or(1.0);
+    let size = w.outer_size().map(|s| s.width as f64).unwrap_or(420.0 * scale);
+    let mut x = icon.x - size / 2.0;
+    if let Ok(Some(mon)) = w.current_monitor() {
+        let mw = mon.size().width as f64;
+        let margin = 8.0 * scale;
+        x = x.min(mw - size - margin).max(margin);
+    }
+    let _ = w.set_position(tauri::PhysicalPosition::new(x, icon.y + 6.0));
+}
+
 /// The panel that drops down from the menu bar icon.
-fn toggle_panel(app: &tauri::AppHandle) {
+fn toggle_panel(app: &tauri::AppHandle, icon: tauri::PhysicalPosition<f64>) {
     if let Some(w) = app.get_webview_window("panel") {
         if w.is_visible().unwrap_or(false) {
             let _ = w.hide();
         } else {
+            place_panel(&w, icon);
             let _ = w.show();
             let _ = w.set_focus();
         }
@@ -52,7 +67,14 @@ fn toggle_panel(app: &tauri::AppHandle) {
     .decorations(false)
     .always_on_top(true)
     .skip_taskbar(true)
+    .visible(false)
     .build();
+
+    if let Some(w) = app.get_webview_window("panel") {
+        place_panel(&w, icon);
+        let _ = w.show();
+        let _ = w.set_focus();
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -133,10 +155,11 @@ pub fn run() {
                     if let TrayIconEvent::Click {
                         button: MouseButton::Left,
                         button_state: MouseButtonState::Up,
+                        position,
                         ..
                     } = event
                     {
-                        toggle_panel(tray.app_handle());
+                        toggle_panel(tray.app_handle(), position);
                     }
                 })
                 .build(app)?;
@@ -147,6 +170,11 @@ pub fn run() {
         .on_window_event(|window, event| {
             // Closing the main window hides it instead of quitting: the tray icon
             // stays live, the way Docker and Wispr Flow behave.
+            if let tauri::WindowEvent::Focused(false) = event {
+                if window.label() == "panel" {
+                    let _ = window.hide();
+                }
+            }
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 if window.label() == "main" {
                     let _ = window.hide();

@@ -242,6 +242,13 @@ export const BLOCKS = [
   },
 ];
 
-export const ALL_PROBLEMS = BLOCKS.flatMap((b) =>
+// Easy/Medium first across every block, then a second pass of the Hards.
+// Meeting "42. Trapping Rain Water" on day six, before you have ever written a
+// monotonic stack, is how a plan gets abandoned in week one.
+const _flat = BLOCKS.flatMap((b) =>
   b.problems.map((p) => ({ ...p, block: b.id, blockName: b.name }))
 );
+export const ALL_PROBLEMS = [
+  ..._flat.filter((p) => p.d !== 'Hard'),
+  ..._flat.filter((p) => p.d === 'Hard'),
+];

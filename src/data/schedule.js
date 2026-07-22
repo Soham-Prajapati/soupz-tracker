@@ -229,10 +229,13 @@ export function buildSchedule() {
 
     /* ---------------- DSA: reinforcement (spaced repetition) ---------------- */
     const reCount = isExamWeek ? 0 : (phase.name === 'Mid Terms' ? 1 : 2);
+    const seenRe = new Set();
     for (let k = 0; k < reCount && pIdx > 6; k++) {
-      const lookback = Math.max(0, pIdx - 10 - (days.length % 7) - k * 4);
+      const span = Math.max(1, pIdx - 6);
+      const lookback = (days.length * 2 + k * 5) % span;
       const r = ALL_PROBLEMS[lookback];
-      if (r) {
+      if (r && !seenRe.has(r.n)) {
+        seenRe.add(r.n);
         tasks.push({ id: `re-${dateStr}-${k}`, track: 'dsa', title: `Re-solve: ${r.n}`, url: r.s,
           meta: `Reinforce · ${r.blockName}`,
           why: 'Already solved once. Do it from blank, no notes. Phone-friendly — this is your train and dead-lecture problem. If it takes over 10 minutes you had not actually learned it, and finding that out now is the whole point.',

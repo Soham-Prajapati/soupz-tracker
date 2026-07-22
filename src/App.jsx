@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { SCHEDULE, BLOCKS, ALL_PROBLEMS, LLD, AI, EVENTS, PHASES, parse } from './data/schedule.js';
+import { SCHEDULE, BLOCKS, ALL_PROBLEMS, LLD, AI, EVENTS, PHASES, parse, ACADEMICS, SUBJECT_ORDER } from './data/schedule.js';
 import { COLLEGE } from './data/tracks.js';
 import { LABS, LAB_ORDER, LAB_START } from './data/labs.js';
+import * as Sync from './sync.js';
 import { RESOURCES, CHANNEL_VERDICTS } from './data/resources.js';
 
 const TRACKS = {
@@ -32,6 +33,7 @@ const todayISO = () => {
 };
 const fmt = (s) => { const d = parse(s); return `${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}`; };
 const daysBetween = (a, b) => Math.round((parse(b) - parse(a)) / 86400000);
+const hm = (sec) => { const m = Math.round(sec/60); return m>=60 ? `${Math.floor(m/60)}h ${String(m%60).padStart(2,'0')}m` : `${m} min`; };
 
 function useStore(key, init) {
   const [v, setV] = useState(() => {
@@ -56,16 +58,43 @@ function Ring({ pct, size = 64 }) {
 }
 
 function Task({ t, done, onToggle, onPush }) {
+  const [open, setOpen] = useState(false);
+  const vids = t.videos || [];
+  const total = vids.reduce((a, v) => a + v.m, 0);
   return (
-    <div className={'task' + (done ? ' done' : '')}>
+    <div className={'task k-edge-' + t.track + (done ? ' done' : '')}>
       <button className="cb" onClick={onToggle} aria-label={done ? 'Mark undone' : 'Mark done'}>✓</button>
-      <span className={'dot k-' + t.track} />
       <div className="tbody">
         <div className="ttitle">{t.title}</div>
         {t.meta && <div className="tmeta">{t.meta}</div>}
+
+        {vids.length > 0 && (
+          <div className="vids">
+            <button className={'vids-h' + (open ? ' open' : '')} onClick={() => setOpen(o => !o)}>
+              <span className="chev">›</span>
+              {vids.length === 1 ? '1 video' : `${vids.length} videos`} · {total} min total
+            </button>
+            {open && (
+              <ol className="vlist">
+                {vids.map((v, i) => (
+                  <li key={i}>
+                    <a href={v.u} target="_blank" rel="noreferrer">
+                      <span className="vn">{i + 1}</span>
+                      <span className="vt">{v.t}</span>
+                      <span className="vm">{v.m}m</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        )}
+
         {t.why && <div className="twhy">{t.why}</div>}
         <div className="tactions">
-          {t.url && <a className="btn go" href={t.url} target="_blank" rel="noreferrer">Open →</a>}
+          {t.url && <a className="btn go" href={t.url} target="_blank" rel="noreferrer">
+            {vids.length ? 'Start watching →' : 'Open →'}
+          </a>}
           {!done && onPush && <button className="btn" onClick={onPush}>Push to tomorrow</button>}
         </div>
       </div>
@@ -108,6 +137,30 @@ export default function App() {
   const [pushed, setPushed] = useStore('pushed', {});
   const [view, setView] = useState('today');
   const [accent, setAccent] = useStore('accent', 'blue');
+  const [sync, setSync] = useState('connecting');
+  const [opps, setOpps] = useState([]);
+  const [openRow, setOpenRow] = useState(null);
+
+  // Pull shared state on load; seed the cloud from local on first run.
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        const r = await Sync.pullAll();
+        if (!live) return;
+        const localCount = Object.values(done).filter(Boolean).length;
+        if (localCount && !Object.keys(r.done).length) {
+          await Sync.pushLocal(done, pushed);
+        } else {
+          setDone(d => ({ ...d, ...r.done }));
+          setPushed(p => ({ ...p, ...r.pushed }));
+        }
+        setOpps(r.opportunities || []);
+        setSync('ok');
+      } catch { if (live) setSync('offline'); }
+    })();
+    return () => { live = false; };
+  }, []);
   const [popOpen, setPopOpen] = useState(false);
   const [cursor, setCursor] = useState(todayISO());
 
@@ -146,7 +199,11 @@ export default function App() {
   const doneCount = active.filter(t => done[t.id]).length;
   const pct = active.length ? doneCount / active.length : 0;
 
-  const toggle = (id) => setDone(d => ({ ...d, [id]: !d[id] }));
+  const toggle = (id) => {
+    const next = !done[id];
+    setDone(d => ({ ...d, [id]: next }));
+    Sync.setDone(id, next).catch(() => setSync('offline'));
+  };
   const push = (id) => {
     const nxt = new Date(parse(cursor)); nxt.setDate(nxt.getDate() + 1);
     setPushed(p => ({ ...p, [id]: isoLocal(nxt) }));
@@ -192,6 +249,10 @@ export default function App() {
       <div className="top">
         <div className="top-in">
           <span className="brand">Campaign · Sem V</span>
+          <span className={'synced s-' + sync} title={
+            sync==='ok' ? 'Synced — progress shared across laptop, phone and the Mac app'
+            : sync==='offline' ? 'Offline — changes saved locally, will not sync until reconnected'
+            : 'Connecting…'} />
           <button className="icon-btn" onClick={() => setPopOpen(o => !o)} title="Appearance">◍</button>
           <button className="icon-btn" onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} title="Toggle theme">◐</button>
           {popOpen && (
@@ -214,7 +275,7 @@ export default function App() {
           )}
         </div>
         <div className="top-in tabs" style={{ marginTop: 8 }}>
-          {['today','overview','calendar','week','plan','tracks','labs','subjects','grades','deadlines'].map(v => (
+          {['today','academics','overview','calendar','week','plan','tracks','labs','subjects','grades','deadlines'].map(v => (
             <button key={v} className={'tab' + (view === v ? ' on' : '')} onClick={() => { setView(v); if (v==='today') setCursor(today); }}>
               {v[0].toUpperCase() + v.slice(1)}
             </button>
@@ -639,6 +700,99 @@ export default function App() {
 
                   </>
       )}
+      {view === 'academics' && (() => {
+        // Three passes per module: studied once, revised at +7 and +21 days.
+        const passOf = (id) => id.startsWith('rev21-') ? 3 : id.startsWith('rev7-') ? 2 : 1;
+        const stat = {};
+        SCHEDULE.forEach(d => d.tasks.forEach(t => {
+          const m = t.id.match(/^(?:rev\d+-)?st-([A-Z0-9]+)-(\d+)-\d+$/);
+          if (!m) return;
+          const k = `${m[1]}-${m[2]}`;
+          stat[k] = stat[k] || { 1:[0,0], 2:[0,0], 3:[0,0] };
+          const p = passOf(t.id);
+          stat[k][p][1]++;
+          if (done[t.id]) stat[k][p][0]++;
+        }));
+        const totalSec = SUBJECT_ORDER.reduce((a,c) => a + ACADEMICS[c].seconds, 0);
+        const allDone = Object.values(stat).reduce((a,s) => a + s[1][0]+s[2][0]+s[3][0], 0);
+        const allTot  = Object.values(stat).reduce((a,s) => a + s[1][1]+s[2][1]+s[3][1], 0);
+        return (
+        <>
+          <div className="hero grad">
+            <div className="hero-date">Target: 10 pointer</div>
+            <h1>Academics</h1>
+            <div className="hero-sub">
+              Six subjects, {Object.keys(stat).length} modules, {hm(totalSec)} of verified lecture video.
+              Every module is scheduled three times — studied once, then revised after one week and again after three.
+            </div>
+            <div className="hero-stats">
+              <span><b>{allDone}</b> of {allTot} study tasks done</span>
+              <span><b>{Math.round((allDone/allTot)*100)}%</b> of the semester's material</span>
+            </div>
+          </div>
+
+          <div className="note g" style={{marginBottom:16}}>
+            <b>Why this replaced "speedrun YouTube the night before".</b> Cramming works for recall the next
+            morning and fails at everything after that, which is why your grades did not match how fast you
+            actually pick things up. Spacing the same material across three passes three weeks apart is the
+            single best-evidenced study intervention there is. The passes are already on your calendar, so
+            the decision is not "what should I revise today" — it is just whether you open the app.
+          </div>
+
+          {SUBJECT_ORDER.map(code => {
+            const s = ACADEMICS[code];
+            const mods = s.modules;
+            const EMPTY = { 1:[0,0], 2:[0,0], 3:[0,0] };
+            const dn = mods.reduce((a,m) => { const x = stat[`${code}-${m.m}`] || EMPTY; return a + x[1][0]+x[2][0]+x[3][0]; }, 0);
+            const tt = mods.reduce((a,m) => { const x = stat[`${code}-${m.m}`] || EMPTY; return a + x[1][1]+x[2][1]+x[3][1]; }, 0);
+            return (
+              <div className="subj" key={code} style={{ '--sc': s.color }}>
+                <div className="subj-h">
+                  <div className="subj-id">{code}</div>
+                  <div className="subj-m">
+                    <div className="subj-n">{s.name}</div>
+                    <div className="subj-s">{mods.length} modules · {hm(s.seconds)} of video · {s.channel}</div>
+                  </div>
+                  <div className="subj-p">
+                    <Donut pct={tt ? dn/tt : 0} label="" color={s.color} size={54} />
+                  </div>
+                </div>
+                {s.gap && <div className="note w subj-gap"><b>Source gap:</b> {s.gap}</div>}
+                {s.note && <div className="note subj-gap">{s.note}</div>}
+                <div className="mods">
+                  {mods.map(m => {
+                    const st = stat[`${code}-${m.m}`] || { 1:[0,0], 2:[0,0], 3:[0,0] };
+                    return (
+                      <div className="mod" key={m.m}>
+                        <div className="mod-h">
+                          <span className="mod-n">M{m.m}</span>
+                          <span className="mod-t">{m.name}</span>
+                          <span className="mod-d">{hm(m.seconds)}</span>
+                        </div>
+                        {m.topics && <div className="mod-tp">{m.topics}</div>}
+                        <div className="passes">
+                          {[1,2,3].map(p => {
+                            const [d0,t0] = st[p];
+                            const full = t0 && d0 === t0;
+                            return (
+                              <div key={p} className={'pass' + (full ? ' full' : d0 ? ' part' : '')}
+                                   title={`Pass ${p}: ${d0}/${t0} sessions done`}>
+                                <span className="pass-l">{p === 1 ? 'Learn' : p === 2 ? '+1 wk' : '+3 wk'}</span>
+                                <div className="pass-b"><i style={{ width: `${t0 ? (d0/t0)*100 : 0}%` }} /></div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </>);
+      })()}
+
       {view === 'grades' && (
         <>
           <div className="hero"><div className="hero-date">Target: 9.0+ pointer</div><h1>Grades</h1></div>

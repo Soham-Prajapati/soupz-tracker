@@ -232,3 +232,164 @@ hr{border:none;border-top:1px solid var(--line);margin:14px 0}
 .acc button[aria-pressed="true"]{border-color:var(--tx);transform:scale(1.1)}
 .pop{position:absolute;right:16px;top:52px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:0 8px 32px rgba(0,0,0,.25);z-index:60;min-width:210px}
 .pop h4{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:9px}
+
+/* ============================================================
+   VISUAL PASS — depth, colour and hierarchy.
+   The previous version was cards-and-rows on a flat background,
+   which read as plain. This adds layered surfaces, accent glow,
+   per-track colour identity and motion on interaction.
+   ============================================================ */
+
+:root{
+  --sh1:0 1px 2px rgba(16,24,32,.05);
+  --sh2:0 2px 4px rgba(16,24,32,.04),0 8px 24px -8px rgba(16,24,32,.10);
+  --sh3:0 4px 8px rgba(16,24,32,.05),0 16px 40px -12px rgba(16,24,32,.16);
+  --glow:radial-gradient(120% 140% at 12% 0%,color-mix(in srgb,var(--ac) 16%,transparent) 0%,transparent 62%);
+}
+@media (prefers-color-scheme:dark){:root{
+  --sh1:0 1px 2px rgba(0,0,0,.4);
+  --sh2:0 2px 4px rgba(0,0,0,.35),0 8px 24px -8px rgba(0,0,0,.5);
+  --sh3:0 4px 8px rgba(0,0,0,.4),0 16px 40px -12px rgba(0,0,0,.65);
+  --glow:radial-gradient(120% 140% at 12% 0%,color-mix(in srgb,var(--ac) 22%,transparent) 0%,transparent 62%);
+}}
+:root[data-t="dark"]{
+  --sh1:0 1px 2px rgba(0,0,0,.4);
+  --sh2:0 2px 4px rgba(0,0,0,.35),0 8px 24px -8px rgba(0,0,0,.5);
+  --sh3:0 4px 8px rgba(0,0,0,.4),0 16px 40px -12px rgba(0,0,0,.65);
+  --glow:radial-gradient(120% 140% at 12% 0%,color-mix(in srgb,var(--ac) 22%,transparent) 0%,transparent 62%);
+}
+
+body{
+  background:
+    radial-gradient(70% 50% at 100% 0%,color-mix(in srgb,var(--ac) 7%,transparent) 0%,transparent 60%),
+    var(--bg);
+  background-attachment:fixed;
+}
+
+/* ---- hero gets weight and a light source ---- */
+.hero{
+  position:relative;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;padding:22px 24px;box-shadow:var(--sh2);
+  overflow:hidden;margin-bottom:18px;
+}
+.hero::before{content:"";position:absolute;inset:0;background:var(--glow);pointer-events:none}
+.hero > *{position:relative}
+.hero h1{font-size:34px;letter-spacing:-.035em}
+.hero.grad::after{
+  content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;
+  background:conic-gradient(from 200deg,var(--ac),var(--contest),var(--ai),var(--ac));
+  filter:blur(58px);opacity:.30;pointer-events:none;
+}
+.hero-stats{display:flex;flex-wrap:wrap;gap:18px;margin-top:14px;font-size:13px;color:var(--tx2)}
+.hero-stats b{font-family:var(--mono);font-size:17px;color:var(--tx);font-weight:800;letter-spacing:-.02em}
+
+/* ---- tasks: colour identity + lift ---- */
+.task{
+  position:relative;border-radius:12px;padding:13px 14px 13px 17px;
+  box-shadow:var(--sh1);transition:box-shadow .18s,transform .18s,border-color .18s;
+}
+.task::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  border-radius:12px 0 0 12px;background:var(--tk,var(--line2));opacity:.9;
+}
+.task:hover{box-shadow:var(--sh2);transform:translateY(-1px);border-color:var(--line2)}
+.task.done{opacity:.42;transform:none;box-shadow:none}
+.task.done::before{opacity:.3}
+.k-edge-dsa{--tk:var(--dsa)} .k-edge-contest{--tk:var(--contest)} .k-edge-lld{--tk:var(--lld)}
+.k-edge-ai{--tk:var(--ai)} .k-edge-college{--tk:var(--college)} .k-edge-admin{--tk:var(--admin)}
+.k-edge-content{--tk:var(--content)}
+.k-edge-college::before{background:linear-gradient(180deg,var(--ac),var(--contest))}
+.cb{border-radius:7px}
+.ttitle{font-size:14.5px;letter-spacing:-.005em}
+.tmeta{letter-spacing:.02em}
+.twhy{border-left:2px solid color-mix(in srgb,var(--tk,var(--ac)) 40%,transparent);border-radius:0 7px 7px 0}
+
+/* ---- collapsible verified video list ---- */
+.vids{margin-top:8px}
+.vids-h{
+  display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;
+  font-weight:600;color:var(--ac2);padding:4px 9px;border-radius:99px;
+  background:color-mix(in srgb,var(--ac) 10%,transparent);transition:.15s;
+}
+.vids-h:hover{background:color-mix(in srgb,var(--ac) 18%,transparent)}
+.chev{display:inline-block;transition:transform .18s;font-size:14px;line-height:1}
+.vids-h.open .chev{transform:rotate(90deg)}
+.vlist{list-style:none;margin-top:7px;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.vlist li+li{border-top:1px solid var(--line)}
+.vlist a{display:flex;align-items:center;gap:9px;padding:8px 10px;font-size:12.5px;transition:background .12s}
+.vlist a:hover{background:var(--card2)}
+.vn{font-family:var(--mono);font-size:10px;color:var(--tx3);width:16px;flex:none;text-align:right}
+.vt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx2)}
+.vlist a:hover .vt{color:var(--tx)}
+.vm{font-family:var(--mono);font-size:10.5px;color:var(--tx3);flex:none;
+    background:var(--card2);padding:2px 6px;border-radius:99px}
+
+/* ---- academics: subject + module cards ---- */
+.subj{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:16px 18px;margin-bottom:14px;box-shadow:var(--sh2);position:relative;overflow:hidden;
+}
+.subj::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:3px;
+  background:linear-gradient(90deg,var(--sc),transparent 78%);
+}
+.subj-h{display:flex;align-items:center;gap:13px;margin-bottom:12px}
+.subj-id{
+  font-family:var(--mono);font-size:12px;font-weight:800;letter-spacing:.04em;
+  padding:7px 10px;border-radius:9px;color:var(--sc);flex:none;
+  background:color-mix(in srgb,var(--sc) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--sc) 28%,transparent);
+}
+.subj-m{flex:1;min-width:0}
+.subj-n{font-size:17px;font-weight:750;letter-spacing:-.02em}
+.subj-s{font-size:12px;color:var(--tx3);font-family:var(--mono);margin-top:2px}
+.subj-p{flex:none}
+.subj-p .donut-l{display:none}
+.subj-gap{margin-bottom:12px;font-size:12.5px}
+
+.mods{display:grid;gap:8px}
+@media (min-width:900px){.mods{grid-template-columns:1fr 1fr}}
+.mod{background:var(--card2);border-radius:11px;padding:11px 12px;transition:.15s}
+.mod:hover{background:color-mix(in srgb,var(--sc) 7%,var(--card2))}
+.mod-h{display:flex;align-items:baseline;gap:8px}
+.mod-n{font-family:var(--mono);font-size:10.5px;font-weight:800;color:var(--sc);flex:none}
+.mod-t{flex:1;min-width:0;font-size:13.5px;font-weight:650;letter-spacing:-.01em}
+.mod-d{font-family:var(--mono);font-size:10.5px;color:var(--tx3);flex:none}
+.mod-tp{font-size:11.5px;color:var(--tx3);line-height:1.45;margin-top:4px}
+
+/* three spaced-revision passes */
+.passes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px}
+.pass-l{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;
+        color:var(--tx3);display:block;margin-bottom:3px}
+.pass-b{height:5px;border-radius:99px;background:color-mix(in srgb,var(--tx3) 18%,transparent);overflow:hidden}
+.pass-b i{display:block;height:100%;border-radius:99px;background:var(--sc);
+          transition:width .45s cubic-bezier(.4,0,.2,1)}
+.pass.full .pass-l{color:var(--sc)}
+.pass.full .pass-b{background:color-mix(in srgb,var(--sc) 25%,transparent)}
+
+/* ---- panels & cards pick up the new depth ---- */
+.panel,.card{box-shadow:var(--sh2);border-radius:14px}
+.panel:hover,.card:hover{box-shadow:var(--sh3)}
+.panel,.card{transition:box-shadow .2s}
+.stat{border-radius:12px;box-shadow:var(--sh1);transition:.18s}
+.stat:hover{transform:translateY(-2px);box-shadow:var(--sh2);border-color:var(--line2)}
+.note{border:1px solid color-mix(in srgb,var(--ac) 20%,transparent)}
+.note.w{border-color:color-mix(in srgb,var(--wn) 26%,transparent)}
+.note.g{border-color:color-mix(in srgb,var(--gd) 26%,transparent)}
+
+/* ---- tabs get a pill track ---- */
+.tabs{background:var(--card2);border-radius:11px;padding:3px;gap:2px}
+.tab{border-radius:8px;padding:6px 11px}
+.tab.on{box-shadow:var(--sh1)}
+
+/* ---- calendar depth ---- */
+.cd{border-radius:10px;transition:.14s}
+.cd:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.cd.today{box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 22%,transparent)}
+
+@media (max-width:520px){
+  .hero{padding:18px 16px;border-radius:14px}
+  .hero h1{font-size:26px}
+  .subj{padding:14px}
+  .passes{gap:4px}
+}

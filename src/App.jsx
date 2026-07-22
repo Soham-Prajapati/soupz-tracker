@@ -5,6 +5,16 @@ import { LABS, LAB_ORDER, LAB_START } from './data/labs.js';
 import * as Sync from './sync.js';
 import { enable as autoOn, disable as autoOff, isEnabled as autoIs } from '@tauri-apps/plugin-autostart';
 
+// Keep the menu bar count in sync with today's progress.
+function useTrayProgress(done, total) {
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('__TAURI_INTERNALS__' in window)) return;
+    import('@tauri-apps/api/core')
+      .then(({ invoke }) => invoke('set_tray_progress', { done, total }))
+      .catch(() => {});
+  }, [done, total]);
+}
+
 const isDesktop = () => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 import { RESOURCES, CHANNEL_VERDICTS } from './data/resources.js';
 
@@ -241,34 +251,39 @@ function Settings({ theme, setTheme, accent, setAccent, sync, done }) {
 }
 
 function Panel({ day, tasks, done, toggle, today }) {
+  useEffect(() => {
+    document.body.classList.add('panel-mode');
+    return () => document.body.classList.remove('panel-mode');
+  }, []);
   const dn = tasks.filter(t => done[t.id]).length;
   const byTrack = {};
   tasks.forEach(t => { (byTrack[t.track] = byTrack[t.track] || []).push(t); });
   return (
-    <div style={{ padding: '14px 14px 20px', maxHeight: '100vh', overflowY: 'auto' }}>
-      <div className="hd-eyebrow" style={{ marginBottom: 6 }}>{fmt(today)} · {day.phase}</div>
-      <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-.03em', marginBottom: 10 }}>
-        <span style={{ fontFamily: 'var(--mono)', color: 'var(--ac)' }}>{dn}</span>
-        <span style={{ color: 'var(--tx3)' }}> / {tasks.length}</span> done
-      </h1>
-      <div className="seg" style={{ margin: '0 0 14px' }}>
-        {tasks.map(t => (<i key={t.id} className={done[t.id] ? 'on' : ''} style={{ '--sc': 'var(--' + t.track + ')' }} />))}
-      </div>
-      {Object.entries(byTrack).map(([k, ts]) => (
-        <div className="tg" key={k} style={{ marginBottom: 9 }}>
-          <div className="tg-h">
-            <span className="kdot" style={{ background: 'var(--' + k + ')' }} />{TRACKS[k]}
-            <span className="ct">{ts.filter(t => done[t.id]).length}/{ts.length}</span>
-          </div>
-          {ts.map(t => (
-            <div className={'tr' + (done[t.id] ? ' on' : '')} key={t.id}>
-              <button className="tr-cb" onClick={() => toggle(t.id)}>OK</button>
-              <div className="tr-m"><div className="tr-t" style={{ fontSize: 13 }}>{t.title}</div></div>
-              {t.url && <a className="ib go" href={t.url} target="_blank" rel="noreferrer" title="Open">GO</a>}
-            </div>
-          ))}
+    <div className="pnl">
+      <div className="pnl-top">
+        <div className="pnl-date">{fmt(today)} · {day.phase}</div>
+        <div className="pnl-h1"><b>{dn}</b><s> / {tasks.length}</s> done</div>
+        <div className="seg" style={{ margin: 0, height: 5 }}>
+          {tasks.map(t => (<i key={t.id} className={done[t.id] ? 'on' : ''} style={{ '--sc': 'var(--' + t.track + ')' }} />))}
         </div>
-      ))}
+      </div>
+      <div className="pnl-scroll">
+        {Object.entries(byTrack).map(([k, ts]) => (
+          <div className="pnl-g" key={k}>
+            <div className="pnl-gh">
+              <i style={{ background: 'var(--' + k + ')' }} />{TRACKS[k]}
+              <span>{ts.filter(t => done[t.id]).length}/{ts.length}</span>
+            </div>
+            {ts.map(t => (
+              <div className={'pnl-r' + (done[t.id] ? ' on' : '')} key={t.id}>
+                <button className="pnl-cb" onClick={() => toggle(t.id)} aria-label="Toggle">✓</button>
+                <div className="pnl-t">{t.title}</div>
+                {t.url && <a className="pnl-go" href={t.url} target="_blank" rel="noreferrer">OPEN</a>}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -370,6 +385,8 @@ export default function App() {
     }
     return n;
   }, [done, today, byDate]);
+
+  useTrayProgress(doneCount, active.length);
 
   const upcoming = EVENTS.filter(e => e.d >= today).slice(0, 8);
   const nextDeadline = EVENTS.find(e => e.d >= today && e.type === 'deadline');

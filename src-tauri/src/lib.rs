@@ -1,3 +1,5 @@
+use tauri::utils::config::WindowEffectsConfig;
+use tauri::utils::{WindowEffect, WindowEffectState};
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem, Submenu},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -62,12 +64,20 @@ fn toggle_panel(app: &tauri::AppHandle, icon: tauri::PhysicalPosition<f64>) {
         WebviewUrl::App("index.html?window=panel".into()),
     )
     .title("Campaign")
-    .inner_size(420.0, 620.0)
+    .inner_size(360.0, 540.0)
     .resizable(false)
     .decorations(false)
     .always_on_top(true)
     .skip_taskbar(true)
     .visible(false)
+    .transparent(true)
+    .shadow(true)
+    .effects(WindowEffectsConfig {
+        effects: vec![WindowEffect::Popover],
+        state: Some(WindowEffectState::Active),
+        radius: Some(12.0),
+        color: None,
+    })
     .build();
 
     if let Some(w) = app.get_webview_window("panel") {
@@ -77,9 +87,20 @@ fn toggle_panel(app: &tauri::AppHandle, icon: tauri::PhysicalPosition<f64>) {
     }
 }
 
+/// Frontend pushes today's progress up so the menu bar shows it live,
+/// the way CodeBurn shows spend rather than just an icon.
+#[tauri::command]
+fn set_tray_progress(app: tauri::AppHandle, done: u32, total: u32) {
+    if let Some(tray) = app.tray_by_id("main-tray") {
+        let _ = tray.set_title(Some(format!("{}/{}", done, total)));
+        let _ = tray.set_tooltip(Some(&format!("Campaign — {} of {} done today", done, total)));
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![set_tray_progress])
         .plugin(tauri_plugin_log::Builder::default().build())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
@@ -141,7 +162,10 @@ pub fn run() {
             let tray_menu = Menu::with_items(app, &[&tray_open, &tray_settings, &tray_quit])?;
 
             TrayIconBuilder::with_id("main-tray")
-                .icon(app.default_window_icon().unwrap().clone())
+                .icon(
+                    tauri::image::Image::from_bytes(include_bytes!("../icons/tray.png"))
+                        .unwrap_or_else(|_| app.default_window_icon().unwrap().clone()),
+                )
                 .icon_as_template(true)
                 .tooltip("Campaign — today's plan")
                 .menu(&tray_menu)

@@ -141,3 +141,44 @@ body{background:
 .kb-row:last-of-type{border-bottom:none}
 kbd{font-family:var(--mono);font-size:11px;background:var(--card2);border:1px solid var(--line2);
   border-bottom-width:2px;border-radius:5px;padding:2px 7px;color:var(--tx2)}
+
+/* ============ native popover panel ============
+   Transparent so the macOS vibrancy material shows through, with the
+   rounded corner clipped in CSS to match the window radius. */
+body.panel-mode{background:transparent!important}
+.pnl{border-radius:12px;overflow:hidden;height:100vh;display:flex;flex-direction:column;
+  background:color-mix(in srgb,var(--card) 72%,transparent)}
+.pnl-top{padding:12px 14px 10px;flex:none}
+.pnl-scroll{flex:1;overflow-y:auto;padding:0 10px 12px;scrollbar-width:thin}
+.pnl-scroll::-webkit-scrollbar{width:6px}
+.pnl-scroll::-webkit-scrollbar-thumb{background:var(--line2);border-radius:99px}
+
+.pnl-date{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--tx3);margin-bottom:5px}
+.pnl-h1{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1;margin-bottom:9px}
+.pnl-h1 b{font-family:var(--mono);color:var(--ac);font-weight:800}
+.pnl-h1 s{text-decoration:none;color:var(--tx3);font-weight:600;font-size:15px}
+
+.pnl-g{margin-bottom:7px;border-radius:9px;overflow:hidden;
+  background:color-mix(in srgb,var(--card2) 55%,transparent);
+  border:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.pnl-gh{display:flex;align-items:center;gap:7px;padding:6px 10px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tx3);font-weight:700}
+.pnl-gh i{width:5px;height:5px;border-radius:99px;flex:none}
+.pnl-gh span{margin-left:auto;font-variant-numeric:tabular-nums}
+
+.pnl-r{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;
+  border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent);transition:background .1s}
+.pnl-r:hover{background:color-mix(in srgb,var(--card) 45%,transparent)}
+.pnl-r.on{opacity:.4}
+.pnl-r.on .pnl-t{text-decoration:line-through}
+.pnl-cb{width:15px;height:15px;border-radius:5px;border:1.4px solid var(--line2);flex:none;
+  margin-top:1px;cursor:pointer;display:grid;place-items:center;font-size:9px;color:transparent;
+  transition:.13s cubic-bezier(.34,1.5,.64,1)}
+.pnl-cb:hover{border-color:var(--ac)}
+.pnl-r.on .pnl-cb{background:var(--ac);border-color:var(--ac);color:#fff}
+.pnl-t{flex:1;min-width:0;font-size:12px;line-height:1.35;letter-spacing:-.003em}
+.pnl-go{flex:none;font-family:var(--mono);font-size:8.5px;letter-spacing:.09em;font-weight:700;
+  color:var(--ac2);opacity:0;transition:opacity .1s;padding-top:2px}
+.pnl-r:hover .pnl-go{opacity:1}

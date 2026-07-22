@@ -100,10 +100,32 @@ fn set_tray_progress(app: tauri::AppHandle, done: u32, total: u32) {
     }
 }
 
+/// Check for a newer build, download and install it. Returns a short status
+/// string so Settings can say what happened without the frontend knowing
+/// anything about the update protocol.
+#[tauri::command]
+async fn check_for_update(app: tauri::AppHandle) -> Result<String, String> {
+    use tauri_plugin_updater::UpdaterExt;
+    let updater = app.updater().map_err(|e| e.to_string())?;
+    match updater.check().await {
+        Ok(Some(update)) => {
+            let version = update.version.clone();
+            update
+                .download_and_install(|_, _| {}, || {})
+                .await
+                .map_err(|e| e.to_string())?;
+            Ok(format!("Updated to {version}. Restart Campaign to finish."))
+        }
+        Ok(None) => Ok("You are on the latest version.".into()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![set_tray_progress])
+        .invoke_handler(tauri::generate_handler![set_tray_progress, check_for_update])
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_log::Builder::default().build())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,

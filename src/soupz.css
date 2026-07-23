@@ -622,6 +622,24 @@ body.panel-mode::after{display:none}
   .recipe,.slip{padding:16px 15px}
   .passes{gap:5px}
 }
+/* Phones: the nav leaves the top and becomes a fixed bottom bar — thumb-reachable
+   and native-feeling. The mark (logo + Soupz) stays sticky at the top. */
+@media (max-width:640px){
+  /* backdrop-filter on .menu would trap position:fixed to the menu box, so the
+     bottom bar would stick to the TOP. Drop it on mobile; solid bg instead. */
+  .menu{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--paper)}
+  .nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:60;
+    margin:0;padding:7px 12px calc(7px + env(safe-area-inset-bottom));
+    background:color-mix(in srgb,var(--paper) 93%,transparent);
+    -webkit-backdrop-filter:blur(16px) saturate(1.2);backdrop-filter:blur(16px) saturate(1.2);
+    border-top:2px solid var(--ink);
+    gap:3px;box-shadow:0 -8px 24px -12px rgba(0,0,0,.6);
+  }
+  .nav-i{padding:9px 15px;font-size:13px}
+  .nav-i.on::after{bottom:auto;top:2px}
+  .app{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
   .steam,.smark-p{opacity:.45}

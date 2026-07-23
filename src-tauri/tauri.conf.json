@@ -1,6 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Campaign",
+  "productName": "Soupz",
+  "mainBinaryName": "Soupz",
   "version": "0.1.1",
   "identifier": "me.sohamprajapati.campaign",
   "build": {
@@ -39,18 +40,18 @@
     },
     "macOS": {
       "dmg": {
-        "background": "dmg/background.png",
+        "background": "dmg/background.tiff",
         "windowSize": {
           "width": 660,
-          "height": 420
+          "height": 448
         },
         "appPosition": {
           "x": 196,
-          "y": 272
+          "y": 250
         },
         "applicationFolderPosition": {
           "x": 464,
-          "y": 272
+          "y": 250
         }
       }
     },

@@ -1,0 +1,628 @@
+/* ==========================================================================
+   SOUPZ — the whole visual system.
+
+   The idea: the semester is a pot of soup. It starts empty, you add to it
+   every day, and by the end of November it is full and it is dinner. So the
+   app is not a dashboard — it is a kitchen worktop. Warm paper, drawn ink,
+   one bowl that fills, and steam when something is actually cooking.
+
+   Rules this file follows:
+     · nothing is a rounded grey rectangle on a grey background
+     · every border is drawn by hand, never a 1px hairline
+     · progress is liquid or a noodle, never a bar
+     · colour comes from ingredients, not from a UI palette
+   ========================================================================== */
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* --------------------------------------------------------------------------
+   1. INK AND PAPER
+   -------------------------------------------------------------------------- */
+:root{
+  /* paper */
+  --paper:#F2E7D3;          /* the worktop */
+  --paper2:#E7D9C0;         /* pressed / recessed paper */
+  --paper3:#FBF4E7;         /* a fresh slip laid on top */
+  --paper-edge:#DCC9A8;
+
+  /* ink */
+  --ink:#2B2118;
+  --ink2:#6B5945;
+  --ink3:#9C8B72;
+  --rule:#CBB795;
+  --rule2:#B9A17C;
+
+  /* broth — the accent, chosen in Settings */
+  --broth:var(--accent-c,#E2963C);
+  --broth2:var(--accent-c2,#C1701F);
+  --broth-lit:var(--accent-cw,#F6C77E);
+  --steam:color-mix(in srgb,var(--ink) 32%,transparent);
+
+  /* ingredients — the tracks keep their old variable names so the data
+     files do not need to know anything changed */
+  --dsa:#DE7C2E;        /* carrot     */
+  --contest:#C4392A;    /* chilli     */
+  --lld:#4E8C3F;        /* scallion   */
+  --ai:#2E8B8B;         /* seaweed    */
+  --college:#B5842B;    /* miso       */
+  --aptitude:#6E9E3A;   /* pea        */
+  --admin:#8A6A55;      /* clay pot   */
+  --content:#A63D6B;    /* beetroot   */
+
+  /* signal */
+  --hot:#C4392A; --hot-w:#F6E2D5;
+  --good:#3E7D46; --good-w:#E4EFDA;
+
+  /* legacy aliases still referenced by the data files and older markup */
+  --ac:var(--broth); --ac2:var(--broth2); --acw:var(--broth-lit);
+  --bg:var(--paper); --card:var(--paper3); --card2:var(--paper2);
+  --line:var(--rule); --line2:var(--rule2);
+  --tx:var(--ink); --tx2:var(--ink2); --tx3:var(--ink3);
+  --wn:var(--hot); --wnw:var(--hot-w); --gd:var(--good); --gdw:var(--good-w);
+
+  --display:"Fraunces",ui-serif,"Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --sans:"Nunito Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+
+  --lift:0 2px 0 var(--paper-edge),0 6px 18px -10px rgba(60,40,20,.45);
+  --lift2:0 3px 0 var(--paper-edge),0 16px 34px -14px rgba(60,40,20,.5);
+
+  /* the hand-drawn box: two mismatched radii, redrawn per element */
+  --hand:255px 15px 225px 15px/15px 225px 15px 255px;
+  --hand2:15px 225px 15px 255px/225px 15px 255px 15px;
+}
+
+/* night kitchen */
+@media (prefers-color-scheme:dark){:root:not([data-t="light"]){
+  --paper:#17120E; --paper2:#211A14; --paper3:#241C15; --paper-edge:#0E0B08;
+  --ink:#F4E7D2; --ink2:#C3B098; --ink3:#8D7C67;
+  --rule:#4A3C2E; --rule2:#5F4E3C;
+  --steam:color-mix(in srgb,var(--ink) 26%,transparent);
+  --dsa:#F0994D; --contest:#EC6752; --lld:#82C46B; --ai:#54C3BE;
+  --college:#E0B451; --aptitude:#A8CE63; --admin:#C0A088; --content:#E2749F;
+  --hot:#EC6752; --hot-w:#2E1712; --good:#7FCB86; --good-w:#14260F;
+  --lift:0 2px 0 rgba(0,0,0,.5),0 8px 22px -12px rgba(0,0,0,.9);
+  --lift2:0 3px 0 rgba(0,0,0,.55),0 18px 38px -16px rgba(0,0,0,.95);
+}}
+:root[data-t="dark"]{
+  --paper:#17120E; --paper2:#211A14; --paper3:#241C15; --paper-edge:#0E0B08;
+  --ink:#F4E7D2; --ink2:#C3B098; --ink3:#8D7C67;
+  --rule:#4A3C2E; --rule2:#5F4E3C;
+  --steam:color-mix(in srgb,var(--ink) 26%,transparent);
+  --dsa:#F0994D; --contest:#EC6752; --lld:#82C46B; --ai:#54C3BE;
+  --college:#E0B451; --aptitude:#A8CE63; --admin:#C0A088; --content:#E2749F;
+  --hot:#EC6752; --hot-w:#2E1712; --good:#7FCB86; --good-w:#14260F;
+  --lift:0 2px 0 rgba(0,0,0,.5),0 8px 22px -12px rgba(0,0,0,.9);
+  --lift2:0 3px 0 rgba(0,0,0,.55),0 18px 38px -16px rgba(0,0,0,.95);
+}
+
+html{background:var(--paper)}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+  overflow-x:hidden;
+}
+/* paper grain + a warm light coming in from the top left, like a window */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  opacity:.30;mix-blend-mode:multiply;
+}
+@media (prefers-color-scheme:dark){:root:not([data-t="light"]) body::before{opacity:.4;mix-blend-mode:overlay}}
+:root[data-t="dark"] body::before{opacity:.4;mix-blend-mode:overlay}
+body::after{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(70% 55% at 12% -8%,color-mix(in srgb,var(--broth) 22%,transparent),transparent 70%),
+    radial-gradient(60% 50% at 100% 100%,color-mix(in srgb,var(--lld) 10%,transparent),transparent 70%);
+}
+#root{position:relative;z-index:1}
+
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2.5px dashed var(--broth2);outline-offset:3px;border-radius:6px}
+.ink-defs{position:absolute;width:0;height:0;overflow:hidden}
+
+.app{max-width:1180px;margin:0 auto;padding:0 20px 120px;position:relative}
+
+/* --------------------------------------------------------------------------
+   2. TYPE
+   -------------------------------------------------------------------------- */
+h1,h2,h3,.display{
+  font-family:var(--display);
+  font-variation-settings:"SOFT" 60,"WONK" 1,"opsz" 80;
+  font-weight:700;letter-spacing:-.015em;line-height:1.04;
+}
+.eyebrow{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink3);display:flex;align-items:center;gap:9px;margin-bottom:10px;
+}
+.eyebrow::after{content:"";flex:1;height:0;border-bottom:1.5px dotted var(--rule)}
+.lede{font-size:15px;color:var(--ink2);max-width:60ch;margin-top:10px}
+.hand{font-family:var(--display);font-variation-settings:"SOFT" 100,"WONK" 1;font-style:italic}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.num{font-family:var(--display);font-variation-settings:"SOFT" 40,"WONK" 0;font-weight:800;
+  font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+
+/* --------------------------------------------------------------------------
+   3. THE HAND-DRAWN BOX
+   Every container in the app is one of these. The doubled outline is what
+   makes it read as drawn rather than rendered.
+   -------------------------------------------------------------------------- */
+.sketch{
+  position:relative;background:var(--paper3);
+  border:2px solid var(--ink);border-radius:var(--hand);
+  box-shadow:var(--lift);
+}
+.sketch::before{
+  content:"";position:absolute;inset:2px;pointer-events:none;
+  border:1.4px solid var(--ink);border-radius:var(--hand2);
+  opacity:.22;transform:rotate(-.22deg);
+}
+.sketch.soft{border-width:1.8px;box-shadow:none;background:transparent}
+.sketch.soft::before{display:none}
+.sketch.thin{border-color:var(--rule2)}
+.sketch.thin::before{opacity:.14}
+.sketch.b2{border-radius:var(--hand2)}
+.sketch.b2::before{border-radius:var(--hand)}
+
+/* a slip of paper, slightly askew, with tape */
+.slip{position:relative;background:var(--paper3);border:2px solid var(--ink);
+  border-radius:var(--hand);padding:18px 20px;margin-bottom:16px;box-shadow:var(--lift)}
+.slip::before{content:"";position:absolute;inset:3px;border:1.3px solid var(--ink);
+  border-radius:var(--hand2);opacity:.2;pointer-events:none;transform:rotate(.2deg)}
+.slip>*{position:relative}
+.slip:nth-of-type(even){border-radius:var(--hand2)}
+.slip:nth-of-type(even)::before{border-radius:var(--hand)}
+.slip-h{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.slip-t{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.slip-t.big{font-family:var(--display);font-size:19px;letter-spacing:-.01em;text-transform:none;color:var(--ink);
+  font-variation-settings:"SOFT" 60,"WONK" 1;font-weight:700}
+.slip-v{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink3);font-weight:700}
+
+.tape{position:absolute;top:-11px;left:26px;width:66px;height:22px;
+  background:color-mix(in srgb,var(--broth) 34%,var(--paper3));
+  border-left:1px dashed color-mix(in srgb,var(--ink) 25%,transparent);
+  border-right:1px dashed color-mix(in srgb,var(--ink) 25%,transparent);
+  transform:rotate(-3deg);opacity:.85;z-index:2}
+.tape.r{left:auto;right:32px;transform:rotate(2.5deg)}
+
+/* --------------------------------------------------------------------------
+   4. MASTHEAD + NAV — the menu board above the counter
+   -------------------------------------------------------------------------- */
+.menu{position:sticky;top:0;z-index:40;margin:0 -20px 24px;padding:12px 20px 10px;
+  background:color-mix(in srgb,var(--paper) 88%,transparent);
+  backdrop-filter:blur(10px) saturate(1.2);
+  border-bottom:2px solid var(--ink)}
+.menu::after{content:"";position:absolute;left:0;right:0;bottom:-5px;height:3px;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 8px,transparent 8px 19px);opacity:.22}
+.menu-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.mark{display:flex;align-items:center;gap:9px;margin-right:auto;min-width:0}
+.mark-n{font-family:var(--display);font-variation-settings:"SOFT" 100,"WONK" 1;
+  font-weight:800;font-size:25px;letter-spacing:-.03em;line-height:1}
+.mark-n i{font-style:normal;color:var(--broth2)}
+.mark-s{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink3);border-left:1.5px solid var(--rule);padding-left:9px;white-space:nowrap}
+@media (max-width:620px){.mark-s{display:none}}
+
+.nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;padding:8px 0 2px;max-width:1180px;margin:0 auto}
+.nav::-webkit-scrollbar{display:none}
+.nav-i{position:relative;padding:6px 13px 8px;font-size:13.5px;font-weight:700;color:var(--ink3);
+  white-space:nowrap;border-radius:10px;transition:color .15s}
+.nav-i:hover{color:var(--ink)}
+.nav-i.on{color:var(--ink)}
+.nav-i.on::after{
+  content:"";position:absolute;left:9px;right:9px;bottom:1px;height:7px;
+  background:var(--broth);border-radius:99px;opacity:.55;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8' preserveAspectRatio='none'%3E%3Cpath d='M1,5 q12,-5 24,0 t24,0 t24,0 t26,0' stroke='%23000' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8' preserveAspectRatio='none'%3E%3Cpath d='M1,5 q12,-5 24,0 t24,0 t24,0 t26,0' stroke='%23000' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  -webkit-mask-size:100% 100%;mask-size:100% 100%;
+}
+
+.pot{width:34px;height:34px;flex:none}
+
+/* --------------------------------------------------------------------------
+   5. THE BOWL
+   -------------------------------------------------------------------------- */
+.bowl{position:relative;max-width:100%}
+/* the hero bowl is the biggest thing on the page — on a phone it gives way */
+@media (max-width:720px){.counter-r .bowl{width:200px!important}}
+.bowl-cap{text-align:center;margin-top:6px}
+.bowl-cap b{display:block;font-family:var(--display);font-size:16px;font-weight:700}
+.bowl-cap span{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3);margin-top:3px}
+
+.wv{animation:drift 9s linear infinite}
+.wv-2{animation:drift-b 13s linear infinite}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(48px)}}
+@keyframes drift-b{from{transform:translateX(0)}to{transform:translateX(-68px)}}
+
+.steam-p{opacity:0;animation:rise 3.6s ease-out infinite;transform-origin:50% 100%}
+@keyframes rise{
+  0%{opacity:0;transform:translateY(6px) scaleX(.85)}
+  22%{opacity:.85}
+  70%{opacity:.35}
+  100%{opacity:0;transform:translateY(-22px) scaleX(1.25)}
+}
+.garnish{animation:bob 4.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-3px) rotate(4deg)}}
+.smark-p{opacity:.5;animation:rise 3.6s ease-out infinite}
+
+.cup{display:inline-block}
+.cup-t{text-align:center;margin-top:4px}
+.cup-t b{display:block;font-family:var(--mono);font-size:12.5px;font-weight:800}
+.cup-t span{display:block;font-size:10.5px;color:var(--ink3);font-weight:700;margin-top:1px}
+
+.noodle{display:block;width:100%;height:12px}
+.rule{display:block;width:100%;height:10px;opacity:.9}
+
+.tick{flex:none;display:block}
+
+/* --------------------------------------------------------------------------
+   6. THE COUNTER — hero block on every view
+   -------------------------------------------------------------------------- */
+.counter{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:26px;
+  align-items:center;padding:26px 28px;margin-bottom:22px;
+  background:var(--paper3);border:2px solid var(--ink);border-radius:var(--hand);box-shadow:var(--lift2)}
+.counter::before{content:"";position:absolute;inset:4px;border:1.4px solid var(--ink);
+  border-radius:var(--hand2);opacity:.2;pointer-events:none;transform:rotate(-.2deg)}
+.counter>*{position:relative}
+.counter h1{font-size:clamp(32px,5.2vw,52px);font-variation-settings:"SOFT" 80,"WONK" 1,"opsz" 120}
+.counter h1 em{font-style:normal;color:var(--broth2)}
+.counter-r{justify-self:end}
+@media (max-width:720px){
+  .counter{grid-template-columns:1fr;padding:20px 18px;gap:14px}
+  .counter-r{justify-self:center}
+}
+
+/* the numbers row under a counter heading */
+.tally{display:flex;flex-wrap:wrap;gap:22px;margin-top:16px}
+.tally-i{min-width:0}
+.tally-i b{display:block;font-family:var(--display);font-size:26px;font-weight:800;
+  letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.tally-i b s{text-decoration:none;font-size:13px;color:var(--ink3);font-weight:600}
+.tally-i span{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink3);margin-top:4px}
+
+/* --------------------------------------------------------------------------
+   7. LAYOUT
+   -------------------------------------------------------------------------- */
+.board{display:grid;grid-template-columns:1fr;gap:20px;align-items:start}
+@media (min-width:1000px){
+  .board{grid-template-columns:minmax(0,1.6fr) minmax(300px,.9fr)}
+  .board-side{position:sticky;top:118px}
+}
+.board-side{display:flex;flex-direction:column;gap:16px}
+.spread{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:20px}
+
+/* --------------------------------------------------------------------------
+   8. THE ORDER TICKET — a task
+   -------------------------------------------------------------------------- */
+.course{margin-bottom:22px}
+.course-h{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.course-g{width:22px;height:22px;flex:none}
+.course-n{font-family:var(--display);font-size:16px;font-weight:700;letter-spacing:-.01em}
+.course-h::after{content:"";flex:1;height:0;border-bottom:1.5px dotted var(--rule)}
+.course-c{font-family:var(--mono);font-size:11px;color:var(--ink3);font-weight:700;flex:none}
+
+.chits{display:grid;gap:8px;align-items:start}
+@media (min-width:1080px){.chits.two{grid-template-columns:1fr 1fr}}
+
+.chit{position:relative;display:flex;gap:12px;padding:12px 14px 12px 15px;
+  background:var(--paper3);border:1.8px solid var(--ink);border-radius:var(--hand);
+  box-shadow:var(--lift);transition:transform .16s cubic-bezier(.34,1.4,.64,1),box-shadow .16s}
+.chit:nth-child(even){border-radius:var(--hand2)}
+.chit::after{content:"";position:absolute;left:-1px;top:12px;bottom:12px;width:4px;border-radius:99px;
+  background:var(--tk,var(--rule2))}
+.chit:hover{transform:translateY(-2px) rotate(-.25deg);box-shadow:var(--lift2)}
+.chit.done{opacity:.5;box-shadow:none;transform:none;background:transparent}
+.chit.done:hover{transform:none}
+.chit-cb{flex:none;align-self:flex-start;padding:2px 0 0;background:none;line-height:0}
+.chit-cb:hover .tick circle{stroke:var(--ink)}
+.chit-m{flex:1;min-width:0}
+.chit-t{font-size:14.5px;font-weight:700;line-height:1.35;letter-spacing:-.005em}
+.chit.done .chit-t{color:var(--ink2)}
+/* struck through by hand — wavy, and it has to cross every line of a
+   two- or three-line task title, which a single pseudo-element cannot do */
+.chit.done .chit-t{
+  text-decoration:line-through;
+  text-decoration-style:wavy;
+  text-decoration-thickness:1px;
+  text-decoration-color:color-mix(in srgb,var(--tk,var(--ink2)) 70%,transparent);
+  text-underline-offset:2px;
+}
+.chit-s{font-family:var(--mono);font-size:10.5px;color:var(--ink3);margin-top:4px;
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;letter-spacing:.03em}
+.chit-s .dur{color:var(--broth2);font-weight:800}
+.chit-why{font-size:12.5px;line-height:1.55;color:var(--ink2);margin-top:9px;padding:8px 11px;
+  background:color-mix(in srgb,var(--tk,var(--broth)) 9%,transparent);
+  border-left:2.5px solid color-mix(in srgb,var(--tk,var(--broth)) 55%,transparent);
+  border-radius:0 10px 10px 0}
+.chit-a{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+
+/* track colours applied to a ticket */
+.t-dsa{--tk:var(--dsa)} .t-contest{--tk:var(--contest)} .t-lld{--tk:var(--lld)}
+.t-ai{--tk:var(--ai)} .t-college{--tk:var(--college)} .t-admin{--tk:var(--admin)}
+.t-content{--tk:var(--content)} .t-aptitude{--tk:var(--aptitude)}
+
+/* --------------------------------------------------------------------------
+   9. BUTTONS, PILLS, ANNOTATIONS
+   -------------------------------------------------------------------------- */
+.btn{font-size:12px;font-weight:800;padding:5px 13px;color:var(--ink2);
+  border:1.8px solid var(--rule2);border-radius:255px 12px 225px 12px/12px 225px 12px 255px;
+  background:var(--paper3);transition:.14s}
+.btn:hover{color:var(--ink);border-color:var(--ink);transform:translateY(-1px)}
+.btn.go{background:var(--broth);border-color:var(--ink);color:#221708}
+.btn.go:hover{background:var(--broth2);color:#fff}
+.btn.on{background:var(--ink);border-color:var(--ink);color:var(--paper3)}
+
+.pill{display:inline-block;font-family:var(--mono);font-size:9.5px;font-weight:800;letter-spacing:.1em;
+  text-transform:uppercase;padding:3px 9px;border:1.5px solid var(--rule2);
+  border-radius:99px;color:var(--ink2);white-space:nowrap}
+.pill.hot{background:var(--hot);border-color:var(--hot);color:#fff}
+.pill.ok{background:var(--broth);border-color:var(--ink);color:#221708}
+.pill.now{background:var(--good);border-color:var(--good);color:#fff}
+
+/* a handwritten margin note */
+.note{position:relative;font-size:13.5px;line-height:1.6;color:var(--ink);padding:14px 16px 14px 18px;
+  margin-bottom:18px;background:color-mix(in srgb,var(--broth) 11%,var(--paper3));
+  border:1.8px solid color-mix(in srgb,var(--broth) 45%,var(--ink));
+  border-radius:var(--hand2)}
+.note b{font-weight:800}
+.note.hot{background:var(--hot-w);border-color:color-mix(in srgb,var(--hot) 55%,var(--ink))}
+.note.good{background:var(--good-w);border-color:color-mix(in srgb,var(--good) 55%,var(--ink))}
+.note::after{content:"";position:absolute;left:-5px;top:14px;bottom:14px;width:3px;
+  background:var(--ink);opacity:.25;border-radius:99px}
+
+/* --------------------------------------------------------------------------
+   10. SHELF — the stat strip
+   -------------------------------------------------------------------------- */
+.shelf{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;
+  border:2px solid var(--ink);border-radius:var(--hand);overflow:hidden;background:var(--paper3);
+  box-shadow:var(--lift);margin-bottom:20px}
+.shelf-i{padding:14px 16px;border-right:1.5px dashed var(--rule)}
+.shelf-i:last-child{border-right:none}
+.shelf-i dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:7px;white-space:nowrap}
+.shelf-i dd{font-family:var(--display);font-size:27px;font-weight:800;letter-spacing:-.035em;
+  line-height:1;display:flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums}
+.shelf-i dd s{text-decoration:none;font-size:12px;color:var(--ink3);font-weight:600;font-family:var(--sans)}
+.shelf-i dd.warn{color:var(--hot)}
+@media (max-width:520px){.shelf-i{border-bottom:1.5px dashed var(--rule)}}
+
+/* --------------------------------------------------------------------------
+   11. LADDER — a labelled noodle, used for every "x of y"
+   -------------------------------------------------------------------------- */
+.ladder{margin-bottom:13px}
+.ladder:last-child{margin-bottom:0}
+.ladder-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:2px}
+.ladder-n{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ladder-v{font-family:var(--mono);font-size:10.5px;color:var(--ink3);flex:none;font-weight:700}
+
+/* --------------------------------------------------------------------------
+   12. THE PANTRY WALL — heatmap of every day in the plan
+   -------------------------------------------------------------------------- */
+.heat{display:grid;grid-template-columns:repeat(auto-fill,minmax(15px,1fr));gap:4px}
+.heat-c{aspect-ratio:1;border-radius:50% 50% 45% 55%/55% 45% 50% 50%;
+  border:1.2px solid var(--rule);background:var(--paper2);transition:.15s}
+.heat-c.past{border-style:dashed;opacity:.55}
+.heat-c:hover{transform:scale(1.5) rotate(6deg);border-color:var(--ink);z-index:2}
+.heat-k{display:flex;gap:16px;align-items:center;margin-top:14px;font-family:var(--mono);
+  font-size:10px;color:var(--ink3);flex-wrap:wrap}
+.heat-k i{width:12px;height:12px;border-radius:50% 50% 45% 55%/55% 45% 50% 50%;
+  border:1.2px solid var(--rule);display:block;margin-right:2px}
+
+/* --------------------------------------------------------------------------
+   13. CALENDAR — a month of little bowls
+   -------------------------------------------------------------------------- */
+.cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.cal-m{font-family:var(--display);font-size:24px;font-weight:800;letter-spacing:-.02em;margin-right:auto}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.cal-hd{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--ink3);
+  text-align:center;padding:2px 0;text-transform:uppercase}
+.cd{position:relative;aspect-ratio:1/.78;min-height:74px;padding:7px 8px 5px;background:var(--paper3);
+  border:1.6px solid var(--rule2);border-radius:var(--hand);cursor:pointer;overflow:hidden;
+  display:flex;flex-direction:column;transition:.14s}
+.cd:nth-child(even){border-radius:var(--hand2)}
+.cd:hover{border-color:var(--ink);transform:translateY(-2px) rotate(-.5deg);box-shadow:var(--lift)}
+.cd.out{opacity:0;pointer-events:none}
+.cd.today{border-color:var(--ink);border-width:2.4px;background:color-mix(in srgb,var(--broth) 14%,var(--paper3))}
+.cd.ev{background:color-mix(in srgb,var(--hot) 12%,var(--paper3))}
+.cd-hd{position:relative;display:flex;align-items:baseline;gap:6px}
+.cd-n{font-family:var(--display);font-size:16px;font-weight:800;color:var(--ink2);line-height:1;letter-spacing:-.02em}
+.cd.today .cd-n{color:var(--ink)}
+.cd-now{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink);background:var(--broth);border-radius:99px;padding:1px 6px;font-weight:800}
+.cd-c{position:relative;font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:3px;font-weight:700}
+.cd-b{position:relative;display:flex;flex-wrap:wrap;gap:3px;margin-top:auto;padding-bottom:2px}
+.cd-b i{width:5px;height:5px;border-radius:99px;display:block}
+.cd-fill{position:absolute;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--broth) 42%,transparent);
+  transition:height .4s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.cd-fill::before{content:"";position:absolute;left:0;right:0;top:-3px;height:6px;
+  background:color-mix(in srgb,var(--broth) 60%,transparent);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6' preserveAspectRatio='none'%3E%3Cpath d='M0,3 q5,-3 10,0 t10,0 t10,0 t10,0 L40,6 L0,6 Z' fill='%23000'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 6' preserveAspectRatio='none'%3E%3Cpath d='M0,3 q5,-3 10,0 t10,0 t10,0 t10,0 L40,6 L0,6 Z' fill='%23000'/%3E%3C/svg%3E");
+  -webkit-mask-size:100% 100%;mask-size:100% 100%}
+.leg{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;font-size:11.5px;color:var(--ink3);font-weight:700}
+.leg span{display:inline-flex;align-items:center;gap:6px}
+.leg i{width:9px;height:9px;border-radius:99px;display:block}
+
+/* --------------------------------------------------------------------------
+   14. WEEK STRIP — seven bowls on a rail
+   -------------------------------------------------------------------------- */
+.weekrail{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:24px}
+@media (max-width:640px){.weekrail{grid-template-columns:repeat(4,1fr)}}
+.wday{padding:10px 6px 8px;text-align:center;background:var(--paper3);
+  border:1.8px solid var(--rule2);border-radius:var(--hand);transition:.15s}
+.wday:nth-child(even){border-radius:var(--hand2)}
+.wday:hover{border-color:var(--ink);transform:translateY(-3px) rotate(-.6deg);box-shadow:var(--lift)}
+.wday.today{border-color:var(--ink);border-width:2.4px}
+.wday-n{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3)}
+.wday-d{font-family:var(--display);font-size:19px;font-weight:800;letter-spacing:-.03em;margin:1px 0 5px}
+.wday .cup{width:38px}
+.wday-p{font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:4px;font-weight:700}
+
+/* --------------------------------------------------------------------------
+   15. RECIPE — academics: subjects and modules
+   -------------------------------------------------------------------------- */
+.recipe{position:relative;background:var(--paper3);border:2px solid var(--ink);
+  border-radius:var(--hand);padding:20px 22px;margin-bottom:20px;box-shadow:var(--lift)}
+.recipe::before{content:"";position:absolute;inset:4px;border:1.3px solid var(--ink);
+  border-radius:var(--hand2);opacity:.18;pointer-events:none;transform:rotate(-.2deg)}
+.recipe>*{position:relative}
+.recipe-h{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.recipe-id{font-family:var(--mono);font-size:11.5px;font-weight:800;letter-spacing:.06em;
+  padding:7px 11px;border:1.8px solid var(--sc);border-radius:255px 14px 225px 14px/14px 225px 14px 255px;
+  color:var(--sc);background:color-mix(in srgb,var(--sc) 12%,transparent);flex:none}
+.recipe-m{flex:1;min-width:0}
+.recipe-n{font-family:var(--display);font-size:21px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.recipe-s{font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:5px}
+
+.mods{display:grid;gap:10px}
+@media (min-width:900px){.mods{grid-template-columns:1fr 1fr}}
+.mod{background:color-mix(in srgb,var(--sc) 6%,var(--paper2));border:1.5px dashed var(--rule2);
+  border-radius:14px;padding:12px 13px;transition:.15s}
+.mod:hover{border-color:var(--sc);border-style:solid}
+.mod.open{border-style:solid;border-color:var(--sc);background:color-mix(in srgb,var(--sc) 10%,var(--paper2))}
+.mod-h{display:flex;align-items:baseline;gap:9px;width:100%;text-align:left;padding:0}
+.mod-n{font-family:var(--mono);font-size:10.5px;font-weight:800;color:var(--sc);flex:none}
+.mod-t{flex:1;min-width:0;font-size:13.5px;font-weight:700;letter-spacing:-.008em;line-height:1.3}
+.mod-d{font-family:var(--mono);font-size:10px;color:var(--ink3);flex:none}
+.mod-cv{margin-left:2px;font-family:var(--mono);font-size:15px;color:var(--ink3);flex:none;line-height:1}
+.mod:hover .mod-cv{color:var(--sc)}
+.mod-tp{font-size:11.5px;color:var(--ink3);line-height:1.45;margin-top:5px}
+
+/* three passes = three simmers */
+.passes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}
+.pass{text-align:left;padding:0}
+.pass-l{font-family:var(--mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink3);display:block;margin-bottom:2px;font-weight:700}
+.pass.full .pass-l{color:var(--sc)}
+.pass:hover .pass-l{color:var(--ink)}
+.pass .noodle{height:9px}
+
+.mod-vids{list-style:none;padding:10px 0 2px;margin:10px 0 0;border-top:1.5px dotted var(--rule)}
+.mod-vids a,.vlist a{display:flex;gap:10px;align-items:baseline;padding:6px 8px;border-radius:8px;font-size:12.5px}
+.mod-vids a:hover,.vlist a:hover{background:color-mix(in srgb,var(--broth) 14%,transparent)}
+.mv-n{font-family:var(--mono);font-size:9.5px;color:var(--ink3);width:17px;flex:none}
+.mv-t{flex:1;min-width:0;line-height:1.35;color:var(--ink2)}
+.mv-m{font-family:var(--mono);font-size:10px;color:var(--broth2);flex:none;font-weight:800}
+
+/* collapsible video list on a ticket */
+.vids{margin-top:9px}
+.vids-h{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;
+  font-weight:800;letter-spacing:.06em;color:var(--ink2);padding:4px 11px;
+  border:1.5px dashed var(--rule2);border-radius:99px;transition:.15s}
+.vids-h:hover{border-style:solid;border-color:var(--ink);color:var(--ink)}
+.chev{display:inline-block;transition:transform .2s;font-size:13px;line-height:1}
+.vids-h.open .chev{transform:rotate(90deg)}
+.vlist{list-style:none;margin-top:8px;border:1.5px dashed var(--rule);border-radius:12px;padding:4px}
+
+/* --------------------------------------------------------------------------
+   16. RAIL — upcoming dates, phases
+   -------------------------------------------------------------------------- */
+.rail{display:flex;flex-direction:column}
+.rail-i{display:flex;gap:12px;align-items:flex-start;padding:9px 0;position:relative}
+.rail-d{width:11px;height:11px;flex:none;margin-top:5px;border-radius:50% 50% 45% 55%/55% 45% 50% 50%;
+  border:1.6px solid var(--rule2);background:var(--paper3);position:relative}
+.rail-i.on .rail-d{background:var(--broth);border-color:var(--ink)}
+.rail-d::after{content:"";position:absolute;left:50%;top:14px;width:0;height:26px;
+  border-left:1.5px dotted var(--rule);transform:translateX(-50%)}
+.rail-i:last-child .rail-d::after{display:none}
+.rail-m{flex:1;min-width:0}
+.rail-t{font-size:13.5px;font-weight:700;line-height:1.35}
+.rail-s{font-family:var(--mono);font-size:10.5px;color:var(--ink3);margin-top:2px}
+.rail-s.hot{color:var(--hot);font-weight:800}
+
+/* --------------------------------------------------------------------------
+   17. LIST ROWS — resources, labs, plan
+   -------------------------------------------------------------------------- */
+.row{display:flex;gap:12px;align-items:flex-start;padding:12px 0;
+  border-bottom:1.5px dotted var(--rule)}
+.row:last-child{border-bottom:none}
+.row-m{flex:1;min-width:0}
+.row-t{font-size:14px;font-weight:700;line-height:1.4}
+.row-s{font-size:12.5px;color:var(--ink2);line-height:1.5;margin-top:3px}
+.row-a{flex:none}
+
+.empty{text-align:center;padding:44px 20px}
+.empty p{margin-top:14px;font-family:var(--display);font-size:19px;font-style:italic;color:var(--ink3)}
+
+/* --------------------------------------------------------------------------
+   18. SETTINGS
+   -------------------------------------------------------------------------- */
+.flavours{display:flex;gap:10px;flex-wrap:wrap}
+.flavour{width:auto;padding:7px 12px 8px;border:1.8px solid var(--rule2);
+  border-radius:255px 13px 225px 13px/13px 225px 13px 255px;background:var(--paper3);
+  display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;transition:.14s}
+.flavour i{width:15px;height:15px;border-radius:50% 50% 45% 55%/55% 45% 50% 50%;
+  border:1.4px solid var(--ink);display:block}
+.flavour:hover{transform:translateY(-2px);border-color:var(--ink)}
+.flavour[aria-pressed="true"]{border-color:var(--ink);background:color-mix(in srgb,var(--broth) 18%,var(--paper3))}
+.sw-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.sw{width:46px;height:26px;border-radius:99px;background:var(--paper2);border:1.8px solid var(--ink);
+  flex:none;padding:2px;transition:.2s cubic-bezier(.34,1.4,.64,1);margin-top:2px}
+.sw i{display:block;width:18px;height:18px;border-radius:99px;background:var(--ink3);transition:.2s cubic-bezier(.34,1.4,.64,1)}
+.sw.on{background:var(--broth)}
+.sw.on i{background:var(--ink);transform:translateX(20px)}
+.sw:disabled{opacity:.4}
+.kb-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;
+  border-bottom:1.5px dotted var(--rule);font-size:13.5px}
+.kb-row:last-of-type{border-bottom:none}
+kbd{font-family:var(--mono);font-size:11px;background:var(--paper2);border:1.5px solid var(--ink);
+  border-bottom-width:3px;border-radius:6px;padding:2px 8px;color:var(--ink2)}
+
+.pot-dot{width:9px;height:9px;border-radius:99px;flex:none}
+.s-ok{background:var(--good);box-shadow:0 0 0 3.5px color-mix(in srgb,var(--good) 22%,transparent)}
+.s-offline{background:var(--hot);box-shadow:0 0 0 3.5px color-mix(in srgb,var(--hot) 22%,transparent)}
+.s-connecting{background:var(--ink3);animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+
+/* --------------------------------------------------------------------------
+   19. THE TRAY POPOVER — same kitchen, tiny
+   -------------------------------------------------------------------------- */
+body.panel-mode{background:transparent}
+body.panel-mode::after{display:none}
+.pnl{border-radius:14px;overflow:hidden;height:100vh;display:flex;flex-direction:column;
+  background:color-mix(in srgb,var(--paper) 80%,transparent)}
+.pnl-top{padding:12px 14px 8px;flex:none;display:flex;gap:12px;align-items:center;
+  border-bottom:1.8px solid var(--ink)}
+.pnl-top .bowl{flex:none}
+.pnl-date{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.pnl-h1{font-family:var(--display);font-size:21px;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-top:3px}
+.pnl-h1 s{text-decoration:none;color:var(--ink3);font-size:15px}
+.pnl-scroll{flex:1;overflow-y:auto;padding:10px;scrollbar-width:thin}
+.pnl-scroll::-webkit-scrollbar{width:6px}
+.pnl-scroll::-webkit-scrollbar-thumb{background:var(--rule2);border-radius:99px}
+.pnl-g{margin-bottom:9px}
+.pnl-gh{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:9px;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);font-weight:800;margin-bottom:4px}
+.pnl-gh i{width:6px;height:6px;border-radius:99px;flex:none}
+.pnl-gh::after{content:"";flex:1;height:0;border-bottom:1.4px dotted var(--rule)}
+.pnl-r{display:flex;align-items:flex-start;gap:9px;padding:6px 7px;border-radius:9px;transition:.12s}
+.pnl-r:hover{background:color-mix(in srgb,var(--paper3) 70%,transparent)}
+.pnl-r.on{opacity:.45}
+.pnl-r.on .pnl-t{text-decoration:line-through}
+.pnl-t{flex:1;min-width:0;font-size:12px;line-height:1.35;font-weight:600}
+.pnl-go{flex:none;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;font-weight:800;
+  color:var(--broth2);opacity:0;transition:.12s;padding-top:2px}
+.pnl-r:hover .pnl-go{opacity:1}
+
+/* --------------------------------------------------------------------------
+   20. RESPONSIVE + MOTION
+   -------------------------------------------------------------------------- */
+@media (max-width:520px){
+  .app{padding:0 14px 90px}
+  .menu{margin:0 -14px 18px;padding:10px 14px 8px}
+  .counter h1{font-size:31px}
+  .recipe,.slip{padding:16px 15px}
+  .passes{gap:5px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .steam,.smark-p{opacity:.45}
+}

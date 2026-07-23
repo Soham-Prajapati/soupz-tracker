@@ -4,3 +4,7 @@ dist
 .supabase-db-password
 .vercel
 src-tauri/target
+
+.DS_Store
+**/.DS_Store
+pnpm-lock.yaml

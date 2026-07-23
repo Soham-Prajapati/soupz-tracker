@@ -1,5 +1,8 @@
 // GENERATED — do not edit by hand.
 // Source: yt-dlp playlist extraction, verified 21 Jul 2026.
+// Gap modules (CE301 m7-8, CE302 m5-6, CE303 m8-11, M132 m3-7) had per-video
+// durations re-fetched from YouTube watch-page lengthSeconds and verified live
+// on 24 Jul 2026 — estimated minutes replaced with real seconds.
 // Every title, duration and URL below came from real playlist data.
 // Videos over 40 min are split into timestamped segments so each
 // study session is a single sitting.
@@ -511,68 +514,78 @@ export const ACADEMICS = {
        {
         "title": "Consistency and Replication in Distributed Computing in Hindi",
         "url": "https://www.youtube.com/watch?v=DGR1jNeY1x8",
-        "m": 3
+        "seconds": 186,
+        "seg": null
        },
        {
         "title": "Replication Management in Distributed Computing in Hindi",
         "url": "https://www.youtube.com/watch?v=dtP3z7NcKW0",
-        "m": 4
+        "seconds": 239,
+        "seg": null
        },
        {
         "title": "Fault Tolerance in Distributed Computing [ Distributed Systems ] in Hindi",
         "url": "https://www.youtube.com/watch?v=soMKryszT2E",
-        "m": 3
+        "seconds": 176,
+        "seg": null
        },
        {
         "title": "Data centric consistency model",
         "url": "https://www.youtube.com/watch?v=m1pmfXgBtfA",
-        "m": 13
+        "seconds": 807,
+        "seg": null
        },
        {
         "title": "2.21 Client centric consistency model",
         "url": "https://www.youtube.com/watch?v=aX6luMtHYo4",
-        "m": 6
+        "seconds": 387,
+        "seg": null
        }
       ],
-      "seconds": 1740
+      "seconds": 1795
      },
      {
       "items": [
        {
         "title": "Distributed Systems | Ch 5 : Data Consistency & Replication Protocols",
         "url": "https://www.youtube.com/watch?v=Xn7mnwlmbMc",
-        "m": 8
+        "seconds": 453,
+        "seg": null
        },
        {
         "title": "Distributed Systems | Ch 6: Consistency Protocols",
         "url": "https://www.youtube.com/watch?v=Js6F6JZp9x8",
-        "m": 8
+        "seconds": 453,
+        "seg": null
        },
        {
         "title": "Distributed Systems 5.1: Replication",
         "url": "https://www.youtube.com/watch?v=mBUCF1WGI_I",
-        "m": 25
+        "seconds": 1520,
+        "seg": null
        }
       ],
-      "seconds": 2460
+      "seconds": 2426
      },
      {
       "items": [
        {
         "title": "Distributed Systems 5.2: Quorums",
         "url": "https://www.youtube.com/watch?v=uNxl3BFcKSA",
-        "m": 10
+        "seconds": 576,
+        "seg": null
        },
        {
         "title": "Data Consistency and Tradeoffs in Distributed Systems",
         "url": "https://www.youtube.com/watch?v=m4q7VkgDWrM",
-        "m": 26
+        "seconds": 1542,
+        "seg": null
        }
       ],
-      "seconds": 2160
+      "seconds": 2118
      }
     ],
-    "seconds": 6360
+    "seconds": 6339
    },
    {
     "m": 8,
@@ -586,96 +599,110 @@ export const ACADEMICS = {
        {
         "title": "Distributed File Systems : DFS : What is Distributed File Systems ? : Distributed Systems",
         "url": "https://www.youtube.com/watch?v=sMLVkTtbMsA",
-        "m": 3
+        "seconds": 157,
+        "seg": null
        },
        {
         "title": "Distributed File System in Distributed Computing in Hindi",
         "url": "https://www.youtube.com/watch?v=Xhi3hqbiXNM",
-        "m": 8
+        "seconds": 482,
+        "seg": null
        },
        {
         "title": "Desirable Features of Distributed File System in Distributed Computing in Hindi",
         "url": "https://www.youtube.com/watch?v=DzqbxOw6NeA",
-        "m": 10
+        "seconds": 593,
+        "seg": null
        },
        {
         "title": "The SUN Network File System (NFS) : SUN- NFS in Distributed System : What is Network File System ?",
         "url": "https://www.youtube.com/watch?v=pOrezSPYT5c",
-        "m": 5
+        "seconds": 295,
+        "seg": null
        },
        {
         "title": "Andrew File System in Distributed System : What is Andrew File System ? : AFS in Distributed System",
         "url": "https://www.youtube.com/watch?v=lS7FupJDFX0",
-        "m": 8
+        "seconds": 469,
+        "seg": null
        }
       ],
-      "seconds": 2040
+      "seconds": 1996
      },
      {
       "items": [
        {
         "title": "Lec-133: Introduction to Hadoop🐘| What is Hadoop🐘| Hadoop Framework🖥",
         "url": "https://www.youtube.com/watch?v=g_x4D2V1MP4",
-        "m": 9
+        "seconds": 567,
+        "seg": null
        },
        {
         "title": "What is HADOOP in Distributed System? HDFS: Concept of HADOOP Distributed File System in Distributed",
         "url": "https://www.youtube.com/watch?v=J1h9ocGYfKw",
-        "m": 5
+        "seconds": 286,
+        "seg": null
        },
        {
         "title": "What is HDFS | Name Node vs Data Node | Replication factor | Rack Awareness | Hadoop🐘🐘Framework",
         "url": "https://www.youtube.com/watch?v=VavRifvVwIo",
-        "m": 14
+        "seconds": 827,
+        "seg": null
        },
        {
         "title": "Google File System - Paper that inspired Hadoop",
         "url": "https://www.youtube.com/watch?v=eRgFNW4QFDc",
-        "m": 12
+        "seconds": 745,
+        "seg": null
        }
       ],
-      "seconds": 2400
+      "seconds": 2425
      },
      {
       "items": [
        {
         "title": "What is MapReduce♻️in Hadoop🐘| Apache Hadoop🐘",
         "url": "https://www.youtube.com/watch?v=pcTFiU7wKkQ",
-        "m": 10
+        "seconds": 597,
+        "seg": null
        },
        {
         "title": "Map Reduce ll Master Job Tracker and Slave Tracker Explained with Examples in Hindi",
         "url": "https://www.youtube.com/watch?v=nDdSZzP8SD8",
-        "m": 8
+        "seconds": 483,
+        "seg": null
        },
        {
         "title": "Hadoop🐘Ecosystem | All Components Hdfs🐘,Mapreduce,Hive🐝,Flume,Sqoop,Yarn,Hbase,Zookeeper🪧,Pig🐷",
         "url": "https://www.youtube.com/watch?v=8r7kHT4K1pA",
-        "m": 11
+        "seconds": 662,
+        "seg": null
        }
       ],
-      "seconds": 1740
+      "seconds": 1742
      },
      {
       "items": [
        {
         "title": "Apache Kafka Fundamentals You Should Know",
         "url": "https://www.youtube.com/watch?v=-RDyEFvnTXI",
-        "m": 5
+        "seconds": 294,
+        "seg": null
        },
        {
         "title": "Kafka Simply Explained",
         "url": "https://www.youtube.com/watch?v=d-NJTcTvyhw",
-        "m": 20
+        "seconds": 1194,
+        "seg": null
        }
       ],
-      "seconds": 1500
+      "seconds": 1488
      }
     ],
-    "seconds": 7680
+    "seconds": 7651
    }
   ],
-  "seconds": 36388
+  "seconds": 36338
  },
  "CE302": {
   "code": "CE302",
@@ -1013,58 +1040,66 @@ export const ACADEMICS = {
        {
         "title": "Cohesion and Coupling in Software Engineering",
         "url": "https://www.youtube.com/watch?v=NweTzHYBgYU",
-        "m": 13
+        "seconds": 766,
+        "seg": null
        },
        {
         "title": "GRASP Principles Overview | Low-Level Design - Tabspace",
         "url": "https://www.youtube.com/watch?v=9Id3BHtmUR4",
-        "m": 9
+        "seconds": 543,
+        "seg": null
        },
        {
         "title": "GRASP | Low Coupling | Controller | High Cohesion | Design Pattern | Urdu/Hindi",
         "url": "https://www.youtube.com/watch?v=5pNxVjyJXJ4",
-        "m": 14
+        "seconds": 840,
+        "seg": null
        },
        {
         "title": "GRASP Principles and Law of Demeter Explained | Clean Code Principles | Design Principles | 9/10",
         "url": "https://www.youtube.com/watch?v=qQQTIYaQ6xw",
-        "m": 7
+        "seconds": 432,
+        "seg": null
        }
       ],
-      "seconds": 2580
+      "seconds": 2581
      },
      {
       "items": [
        {
         "title": "MVC Explained in 4 Minutes",
         "url": "https://www.youtube.com/watch?v=DUg2SWWK18I",
-        "m": 4
+        "seconds": 253,
+        "seg": null
        },
        {
         "title": "What is MVC Architecture? Model View Controller Explained in 8 Minutes",
         "url": "https://www.youtube.com/watch?v=pAHVSpbftYY",
-        "m": 9
+        "seconds": 525,
+        "seg": null
        },
        {
         "title": "Singleton Pattern – Design Patterns (ep 6)",
         "url": "https://www.youtube.com/watch?v=hUE_j6q0LTQ",
-        "m": 20
+        "seconds": 1209,
+        "seg": null
        }
       ],
-      "seconds": 1980
+      "seconds": 1987
      },
      {
       "items": [
        {
         "title": "Observer Pattern – Design Patterns (ep 2)",
         "url": "https://www.youtube.com/watch?v=_BpmfnqjgzQ",
-        "m": 50
+        "seconds": 2986,
+        "seg": null
        }
       ],
-      "seconds": 3000
+      "seconds": 2986
      }
     ],
-    "seconds": 7560
+    "seconds": 7554
    },
    {
     "m": 6,
@@ -1078,136 +1113,158 @@ export const ACADEMICS = {
        {
         "title": "4+1 Architecture View Model (HINDI)",
         "url": "https://www.youtube.com/watch?v=aDNHDmMSE3o",
-        "m": 5
+        "seconds": 284,
+        "seg": null
        },
        {
         "title": "Introduction To Unified Modeling Language (UML) Explained in Hindi",
         "url": "https://www.youtube.com/watch?v=vnPJpzBZn-w",
-        "m": 6
+        "seconds": 341,
+        "seg": null
        },
        {
         "title": "Building Blocks Of UML : THINGS, RELATIONSHIP, DIAGRAM (HINDI)",
         "url": "https://www.youtube.com/watch?v=wY-tO7EWdB0",
-        "m": 5
+        "seconds": 314,
+        "seg": null
        },
        {
         "title": "What Are Use Cases? (Actors, Use Case, System Boundary)",
         "url": "https://www.youtube.com/watch?v=HHC-UO1LgMU",
-        "m": 4
+        "seconds": 239,
+        "seg": null
        },
        {
         "title": "Use Case Relationship : Include Relationship And Extend Relationship Easiest Explanation Ever !",
         "url": "https://www.youtube.com/watch?v=rXqCkOWh9mI",
-        "m": 5
+        "seconds": 308,
+        "seg": null
        },
        {
         "title": "Use Case Packages Explained in Hindi l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=3FZbiuEb1nI",
-        "m": 4
+        "seconds": 259,
+        "seg": null
        }
       ],
-      "seconds": 1740
+      "seconds": 1745
      },
      {
       "items": [
        {
         "title": "Class Diagram Part-1 Explained in Hindi",
         "url": "https://www.youtube.com/watch?v=T4h8yOTunss",
-        "m": 10
+        "seconds": 582,
+        "seg": null
        },
        {
         "title": "Class Diagram Part-2 Explained in Hindi l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=Wpm2wt64KkM",
-        "m": 7
+        "seconds": 426,
+        "seg": null
        },
        {
         "title": "Class Diagram Part-3 Explained in Hindi l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=E7AECLEz6Pk",
-        "m": 6
+        "seconds": 357,
+        "seg": null
        },
        {
         "title": "Object Diagram Explained in Hindi l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=HacpzGKF5cU",
-        "m": 9
+        "seconds": 520,
+        "seg": null
        }
       ],
-      "seconds": 1920
+      "seconds": 1885
      },
      {
       "items": [
        {
         "title": "Sequence Diagram Part-1 Explained in Hindi l UML Diagram l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=nNHipOj2Hvc",
-        "m": 6
+        "seconds": 346,
+        "seg": null
        },
        {
         "title": "Sequence Diagram Part-2 Explained in Hindi l UML Diagram l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=Rq3OACSizhc",
-        "m": 6
+        "seconds": 385,
+        "seg": null
        },
        {
         "title": "Communication Diagram Part-1 Explained in Hindi l UML Diagram l Software Modeling and Designing",
         "url": "https://www.youtube.com/watch?v=FMVjKshSHE8",
-        "m": 6
+        "seconds": 354,
+        "seg": null
        },
        {
         "title": "Communication Diagram Part-2 Explained in Hindi l UML Diagram l Software Modeling and Designing",
         "url": "https://www.youtube.com/watch?v=MO17F73bg4w",
-        "m": 6
+        "seconds": 372,
+        "seg": null
        },
        {
         "title": "Timing Diagram Explained in Hindi l UML Diagram l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=a4NGnipio9I",
-        "m": 11
+        "seconds": 649,
+        "seg": null
        }
       ],
-      "seconds": 2100
+      "seconds": 2106
      },
      {
       "items": [
        {
         "title": "Activity Diagram Part-1 Explained in Hindi l UML Diagram l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=SeoEEMO57ao",
-        "m": 6
+        "seconds": 368,
+        "seg": null
        },
        {
         "title": "Activity Diagram Part-2 Explained in Hindi l UML Diagram l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=h6D3-XSrnZE",
-        "m": 7
+        "seconds": 435,
+        "seg": null
        },
        {
         "title": "State Machine Diagram Part-1 Explained in Hindi l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=TzTl4pdEYWE",
-        "m": 5
+        "seconds": 329,
+        "seg": null
        },
        {
         "title": "State Machine Diagram Part-2 Explained in Hindi l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=TM4xTNRH1bw",
-        "m": 5
+        "seconds": 306,
+        "seg": null
        },
        {
         "title": "Component Diagram Explained in Hindi l UML Diagram l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=L0CZ5wM-DVI",
-        "m": 8
+        "seconds": 495,
+        "seg": null
        },
        {
         "title": "Deployment Diagram Part-1 Explained in Hindi l UML Diagram l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=oc2oxsF-GKo",
-        "m": 5
+        "seconds": 327,
+        "seg": null
        },
        {
         "title": "Deployment Diagram Part-2 Explained in Hindi l UML Diagram l Software Modeling and Designing Course",
         "url": "https://www.youtube.com/watch?v=zubNoMpzdUY",
-        "m": 5
+        "seconds": 323,
+        "seg": null
        }
       ],
-      "seconds": 2460
+      "seconds": 2583
      }
     ],
-    "seconds": 8220
+    "seconds": 8319
    }
   ],
-  "seconds": 34953
+  "seconds": 35046
  },
  "CE303": {
   "code": "CE303",
@@ -1778,33 +1835,38 @@ export const ACADEMICS = {
        {
         "title": "Agents & Environments Sensor Percept Actions and Actuator in Artificial Intelligence Mahesh Huddar",
         "url": "https://www.youtube.com/watch?v=fCSvGlhl7sA",
-        "m": 6
+        "seconds": 331,
+        "seg": null
        },
        {
         "title": "Concept of Rationality Rational Agent Irrational Agent in Artificial Intelligence by Mahesh Huddar",
         "url": "https://www.youtube.com/watch?v=ETd_zGQzoUo",
-        "m": 4
+        "seconds": 269,
+        "seg": null
        },
        {
         "title": "PEAS In Artificial Intelligence Explained With Example In Hindi",
         "url": "https://www.youtube.com/watch?v=yziJQTI9hHU",
-        "m": 4
+        "seconds": 257,
+        "seg": null
        },
        {
         "title": "Task Environment in AI | Automated Taxi Driver in Artificial Intelligence by Mahesh Huddar",
         "url": "https://www.youtube.com/watch?v=_tRhlB5_25I",
-        "m": 6
+        "seconds": 354,
+        "seg": null
        },
        {
         "title": "Properties of Task Environments in AI with examples Artificial Intelligence by Mahesh Huddar",
         "url": "https://www.youtube.com/watch?v=FiD_xBYGjgE",
-        "m": 11
+        "seconds": 660,
+        "seg": null
        }
       ],
-      "seconds": 1860
+      "seconds": 1871
      }
     ],
-    "seconds": 1860
+    "seconds": 1871
    },
    {
     "m": 9,
@@ -1818,33 +1880,38 @@ export const ACADEMICS = {
        {
         "title": "Structure of Agents in AI | Table-driven AI Agent in  Artificial Intelligence by Mahesh Huddar",
         "url": "https://www.youtube.com/watch?v=ER9QomwqFmQ",
-        "m": 6
+        "seconds": 385,
+        "seg": null
        },
        {
         "title": "Simple Reflex Agent in AI | Types of Agents in AI Agents in Artificial Intelligence by Mahesh Huddar",
         "url": "https://www.youtube.com/watch?v=te84Cbggl7g",
-        "m": 6
+        "seconds": 335,
+        "seg": null
        },
        {
         "title": "Model based Reflex Agents in AI | Types of Agents in Artificial Intelligence by Mahesh Huddar",
         "url": "https://www.youtube.com/watch?v=WYeWo7mW5h4",
-        "m": 6
+        "seconds": 370,
+        "seg": null
        },
        {
         "title": "Goal based Agents in AI | Types of Agents in AI | Agents in Artificial Intelligence by Mahesh Huddar",
         "url": "https://www.youtube.com/watch?v=SOw66eBHBIg",
-        "m": 7
+        "seconds": 423,
+        "seg": null
        },
        {
         "title": "Utility Based Agents in Artificial Intelligence | Types of Agents in AI  by Mahesh Huddar",
         "url": "https://www.youtube.com/watch?v=RPbT36gClrQ",
-        "m": 5
+        "seconds": 302,
+        "seg": null
        }
       ],
-      "seconds": 1800
+      "seconds": 1815
      }
     ],
-    "seconds": 1800
+    "seconds": 1815
    },
    {
     "m": 10,
@@ -1858,36 +1925,68 @@ export const ACADEMICS = {
        {
         "title": "State Space Search to represent problem in Artificial Intelligence by Dr. Mahesh Huddar",
         "url": "https://www.youtube.com/watch?v=0VS62q8U2iA",
-        "m": 7
+        "seconds": 443,
+        "seg": null
        },
        {
         "title": "Artificial Intelligence | Task Domains | Tasks in AI | Steps to Solve Problem by Dr. Mahesh Huddar",
         "url": "https://www.youtube.com/watch?v=YnFwyHfS67I",
-        "m": 6
+        "seconds": 363,
+        "seg": null
        },
        {
         "title": "Expert Systems in Artificial Intelligence and Soft Computing in Hindi",
         "url": "https://www.youtube.com/watch?v=o0GFC6c_k4g",
-        "m": 11
+        "seconds": 647,
+        "seg": null
        },
        {
         "title": "Hard Computing Vs Soft Computing ll Soft Computing Course Explained in Hindi",
         "url": "https://www.youtube.com/watch?v=OBFZPivcdqg",
-        "m": 6
+        "seconds": 337,
+        "seg": null
        },
        {
         "title": "Basics Of Soft Computing ll Soft Computing Course Explained in Hindi",
         "url": "https://www.youtube.com/watch?v=sMkgF2PzFY0",
-        "m": 8
+        "seconds": 483,
+        "seg": null
        }
       ],
-      "seconds": 2280
+      "seconds": 2273
      }
     ],
-    "seconds": 2280
+    "seconds": 2273
+   },
+   {
+    "m": 11,
+    "name": "ANFIS: Adaptive Neuro-Fuzzy Inference System",
+    "topics": "Neuro-fuzzy systems, ANFIS architecture and its five layers (fuzzification, rule, normalisation, defuzzification, output), Takagi-Sugeno inference, hybrid learning combining gradient descent with least squares, how ANFIS fuses neural-network learning with fuzzy inference",
+    "channel": "Dr. Pritam Khan + NPTEL IIT Kharagpur",
+    "playlistUrl": "https://www.youtube.com/results?search_query=ANFIS+adaptive+neuro+fuzzy+inference+system",
+    "sessions": [
+     {
+      "items": [
+       {
+        "title": "ANFIS (Adaptive Neuro Fuzzy Inference System)",
+        "url": "https://www.youtube.com/watch?v=5WhTuTKzltQ",
+        "seconds": 574,
+        "seg": null
+       },
+       {
+        "title": "Lecture 33: Neuro-Fuzzy System",
+        "url": "https://www.youtube.com/watch?v=7C19X6pJEuU",
+        "seconds": 1755,
+        "seg": null
+       }
+      ],
+      "seconds": 2329
+     }
+    ],
+    "seconds": 2329
    }
   ],
-  "seconds": 35451
+  "seconds": 37799
  },
  "CE304": {
   "code": "CE304",
@@ -4053,53 +4152,60 @@ export const ACADEMICS = {
        {
         "title": "Micro animations in Figma",
         "url": "https://www.youtube.com/watch?v=oOJ5StJr-pU",
-        "m": 8
+        "seconds": 484,
+        "seg": null
        },
        {
         "title": "Figma Tutorial: Smart Animate and Drag Triggers",
         "url": "https://www.youtube.com/watch?v=6Id4INKEwb8",
-        "m": 9
+        "seconds": 523,
+        "seg": null
        },
        {
         "title": "Figma Smart Animate",
         "url": "https://www.youtube.com/watch?v=KghSZ6_9ick",
-        "m": 5
+        "seconds": 329,
+        "seg": null
        },
        {
         "title": "Figma Smart Animate for Beginners (2022 Tutorial)",
         "url": "https://www.youtube.com/watch?v=thplNeqE9Tg",
-        "m": 10
+        "seconds": 591,
+        "seg": null
        }
       ],
-      "seconds": 1920
+      "seconds": 1927
      },
      {
       "items": [
        {
         "title": "How to get micro-interactions right using Figma",
         "url": "https://www.youtube.com/watch?v=hHp4FGVcHjY",
-        "m": 22
+        "seconds": 1294,
+        "seg": null
        },
        {
         "title": "11 Micro Animations That Will Instantly Level Up Your UI (free figma file)",
         "url": "https://www.youtube.com/watch?v=ld1zhQMXxXU",
-        "m": 8
+        "seconds": 505,
+        "seg": null
        }
       ],
-      "seconds": 1800
+      "seconds": 1799
      },
      {
       "items": [
        {
         "title": "Making Micro Interactions is so fun | ADVANCED FIGMA PROTOTYPING & UI DESIGN TACTICS",
         "url": "https://www.youtube.com/watch?v=w5t8cvaMnfg",
-        "m": 43
+        "seconds": 2590,
+        "seg": null
        }
       ],
-      "seconds": 2580
+      "seconds": 2590
      }
     ],
-    "seconds": 6300
+    "seconds": 6316
    },
    {
     "m": 4,
@@ -4113,88 +4219,101 @@ export const ACADEMICS = {
        {
         "title": "Course overview : Introduction to design systems",
         "url": "https://www.youtube.com/watch?v=Dtd40cHQQlk",
-        "m": 1
+        "seconds": 60,
+        "seg": null
        },
        {
         "title": "Welcome to design systems - Lesson 1 : Introduction to design systems",
         "url": "https://www.youtube.com/watch?v=YLo6g58vUm0",
-        "m": 16
+        "seconds": 943,
+        "seg": null
        },
        {
         "title": "Define your design system's principles - Lesson 2 part 1 : Introduction to design systems",
         "url": "https://www.youtube.com/watch?v=pwzYVIgga2c",
-        "m": 3
+        "seconds": 200,
+        "seg": null
        },
        {
         "title": "Define your design system's documentation - Lesson 2 part 3 : Introduction to design systems",
         "url": "https://www.youtube.com/watch?v=sHF6JSPWbzM",
-        "m": 6
+        "seconds": 350,
+        "seg": null
        },
        {
         "title": "Tokens, variables, and styles - Update: Introduction to design systems",
         "url": "https://www.youtube.com/watch?v=JyCmacSyDY4",
-        "m": 13
+        "seconds": 792,
+        "seg": null
        }
       ],
-      "seconds": 2340
+      "seconds": 2345
      },
      {
       "items": [
        {
         "title": "Build your design system - Lesson 3 : Introduction to design systems",
         "url": "https://www.youtube.com/watch?v=0XSLMGh8yhM",
-        "m": 27
+        "seconds": 1591,
+        "seg": null
        },
        {
         "title": "Document, improve and update your design system - Lesson 4 : Introduction to design systems",
         "url": "https://www.youtube.com/watch?v=_sTWtnNU1L0",
-        "m": 14
+        "seconds": 818,
+        "seg": null
        }
       ],
-      "seconds": 2460
+      "seconds": 2409
      },
      {
       "items": [
        {
         "title": "Figma tutorial: Component properties",
         "url": "https://www.youtube.com/watch?v=iIq8FLt1hUY",
-        "m": 18
+        "seconds": 1093,
+        "seg": null
        },
        {
         "title": "Figma Tutorial: Variants",
         "url": "https://www.youtube.com/watch?v=y29Xwt9dET0",
-        "m": 14
+        "seconds": 855,
+        "seg": null
        }
       ],
-      "seconds": 1920
+      "seconds": 1948
      },
      {
       "items": [
        {
         "title": "Making Material Design",
         "url": "https://www.youtube.com/watch?v=rrT6v5sOwJg",
-        "m": 7
+        "seconds": 409,
+        "seg": null
        },
        {
         "title": "Understanding the Material Design color system | Google Design Tutorials",
         "url": "https://www.youtube.com/watch?v=TB3L1LbC4zw",
-        "m": 5
+        "seconds": 304,
+        "seg": null
        },
        {
         "title": "Google's New Design System - Material 3.0 | What's New and Changed",
         "url": "https://www.youtube.com/watch?v=KxOppFIYBoo",
-        "m": 14
+        "seconds": 870,
+        "seg": null
        },
        {
         "title": "Material Design Motion",
         "url": "https://www.youtube.com/watch?v=cQzien5H2Do",
-        "m": 2
+        "seconds": 98,
+        "seg": null
        }
       ],
-      "seconds": 1680
+      "seconds": 1681
      }
     ],
-    "seconds": 8400
+    "seconds": 8383
    },
    {
     "m": 5,
@@ -4208,63 +4327,72 @@ export const ACADEMICS = {
        {
         "title": "Figma Auto-layout Explained In 5 Minutes",
         "url": "https://www.youtube.com/watch?v=guYN5LaAcS8",
-        "m": 5
+        "seconds": 310,
+        "seg": null
        },
        {
         "title": "A Guide to Auto Layout: Best Practices, Tips & Tricks | Figma",
         "url": "https://www.youtube.com/watch?v=1odqpkfkDL8",
-        "m": 23
+        "seconds": 1380,
+        "seg": null
        }
       ],
-      "seconds": 1680
+      "seconds": 1690
      },
      {
       "items": [
        {
         "title": "Responsive vs Adaptive Design | What is the key difference between Responsive and Adaptive Design?",
         "url": "https://www.youtube.com/watch?v=BGAI4U683_A",
-        "m": 3
+        "seconds": 204,
+        "seg": null
        },
        {
         "title": "Responsive Design in Figma Using Breakpoints",
         "url": "https://www.youtube.com/watch?v=c0ZTaDMGb20",
-        "m": 5
+        "seconds": 279,
+        "seg": null
        },
        {
         "title": "Responsive Web Design Has Never Been This Easy | Figma Breakpoints",
         "url": "https://www.youtube.com/watch?v=gsVwThzYwv8",
-        "m": 4
+        "seconds": 234,
+        "seg": null
        },
        {
         "title": "Responsive Design in Figma: Crash Course 2023",
         "url": "https://www.youtube.com/watch?v=tJCv91c6Krk",
-        "m": 21
+        "seconds": 1246,
+        "seg": null
        }
       ],
-      "seconds": 1980
+      "seconds": 1963
      },
      {
       "items": [
        {
         "title": "Figma RESPONSIVE DESIGN using Variables, Layout grids and Auto Layout | Figma 2024",
         "url": "https://www.youtube.com/watch?v=d0uFJA5OjBo",
-        "m": 20
+        "seconds": 1185,
+        "seg": null
        },
        {
         "title": "Make Your Web Design Responsive Using Variables | Figma Tutorial",
         "url": "https://www.youtube.com/watch?v=grKp_TVAaTE",
-        "m": 16
+        "seconds": 938,
+        "seg": null
        },
        {
         "title": "Creating Responsive Breakpoints in Figma Using Variables + Modes",
         "url": "https://www.youtube.com/watch?v=xNk3QnuowKE",
-        "m": 5
+        "seconds": 280,
+        "seg": null
        }
       ],
-      "seconds": 2460
+      "seconds": 2403
      }
     ],
-    "seconds": 6120
+    "seconds": 6056
    },
    {
     "m": 6,
@@ -4278,48 +4406,54 @@ export const ACADEMICS = {
        {
         "title": "Figma Tutorial: Prototyping & Transitions",
         "url": "https://www.youtube.com/watch?v=-d6zNGeF59M",
-        "m": 5
+        "seconds": 278,
+        "seg": null
        },
        {
         "title": "All Triggers and Transitions when Prototyping in Figma",
         "url": "https://www.youtube.com/watch?v=Y1ChKeMOHAg",
-        "m": 2
+        "seconds": 136,
+        "seg": null
        },
        {
         "title": "Figma Prototyping in 20 minutes | How to prototype in Figma - a beginners guide | Figma 2025",
         "url": "https://www.youtube.com/watch?v=k1iwiHJrAWI",
-        "m": 23
+        "seconds": 1355,
+        "seg": null
        }
       ],
-      "seconds": 1800
+      "seconds": 1769
      },
      {
       "items": [
        {
         "title": "Advanced Prototyping in Figma: Realistic App Design | Smart animate,  Variant interaction",
         "url": "https://www.youtube.com/watch?v=3wJZrKdJVF0",
-        "m": 21
+        "seconds": 1237,
+        "seg": null
        },
        {
         "title": "Figma Prototyping tutorial for beginners (2024) Smart animate!",
         "url": "https://www.youtube.com/watch?v=oAZEttTI0Xw",
-        "m": 11
+        "seconds": 656,
+        "seg": null
        }
       ],
-      "seconds": 1920
+      "seconds": 1893
      },
      {
       "items": [
        {
         "title": "PROTOTYPE a Complex Screen Transition Interaction using FIGMA VARIABLES | Advanced Prototyping",
         "url": "https://www.youtube.com/watch?v=p3mtgb30YW0",
-        "m": 32
+        "seconds": 1950,
+        "seg": null
        }
       ],
-      "seconds": 1920
+      "seconds": 1950
      }
     ],
-    "seconds": 5640
+    "seconds": 5612
    },
    {
     "m": 7,
@@ -4333,72 +4467,82 @@ export const ACADEMICS = {
        {
         "title": "Figma tutorial: Collaboration and handoff in Dev Mode",
         "url": "https://www.youtube.com/watch?v=xCJsRuH7v9w",
-        "m": 7
+        "seconds": 392,
+        "seg": null
        },
        {
         "title": "Design to Development Handoff",
         "url": "https://www.youtube.com/watch?v=F3w_GwBwhYE",
-        "m": 20
+        "seconds": 1174,
+        "seg": null
        },
        {
         "title": "Figma Tip: Syncing variables to code",
         "url": "https://www.youtube.com/watch?v=7gMOTX4f4rc",
-        "m": 2
+        "seconds": 121,
+        "seg": null
        },
        {
         "title": "How to Export Variables From Figma [2026 Full Guide]",
         "url": "https://www.youtube.com/watch?v=CammX_luC1M",
-        "m": 3
+        "seconds": 170,
+        "seg": null
        }
       ],
-      "seconds": 1920
+      "seconds": 1857
      },
      {
       "items": [
        {
         "title": "Figma + developer workflows | design systems, Code Connect, MCP, and Make",
         "url": "https://www.youtube.com/watch?v=A4mqzgFbmjI",
-        "m": 30
+        "seconds": 1786,
+        "seg": null
        }
       ],
-      "seconds": 1800
+      "seconds": 1786
      },
      {
       "items": [
        {
         "title": "Figma tutorial: Branching & merging",
         "url": "https://www.youtube.com/watch?v=tbNCGEC2G1E",
-        "m": 4
+        "seconds": 270,
+        "seg": null
        },
        {
         "title": "Branching and Merging | Figma Bites",
         "url": "https://www.youtube.com/watch?v=Wy2GPB4rbCE",
-        "m": 3
+        "seconds": 179,
+        "seg": null
        },
        {
         "title": "Figma Tutorial - Lesson 46 - Version History",
         "url": "https://www.youtube.com/watch?v=Xn9SSLyVpx0",
-        "m": 4
+        "seconds": 234,
+        "seg": null
        },
        {
         "title": "Versioning Components — UI Design in Figma",
         "url": "https://www.youtube.com/watch?v=BHWyM6AkKc4",
-        "m": 5
+        "seconds": 282,
+        "seg": null
        },
        {
         "title": "Figma Tutorial: Use Figma Variables Like a Pro (+ Practice File)",
         "url": "https://www.youtube.com/watch?v=fn4rP20U2UM",
-        "m": 30
+        "seconds": 1829,
+        "seg": null
        }
       ],
-      "seconds": 2760
+      "seconds": 2794
      }
     ],
-    "seconds": 6480
+    "seconds": 6437
    }
   ],
-  "seconds": 35006
+  "seconds": 34870
  }
 };
 
-export const SUBJECT_ORDER = ["CE301", "CE302", "CE303", "CE304", "CE305", "M132"];
+export const SUBJECT_ORDER = ["CE301","CE302","CE303","CE304","CE305","M132"];

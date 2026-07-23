@@ -100,31 +100,74 @@ fn set_tray_progress(app: tauri::AppHandle, done: u32, total: u32) {
     }
 }
 
-/// Check for a newer build, download and install it. Returns a short status
-/// string so Settings can say what happened without the frontend knowing
-/// anything about the update protocol.
+/// What the frontend needs to render an "update available" notice, without
+/// knowing anything about the update protocol.
+#[derive(Clone, serde::Serialize)]
+struct UpdateInfo {
+    version: String,
+    current_version: String,
+    notes: Option<String>,
+}
+
+/// Ask the update server whether a newer build exists. Returns `None` when we
+/// are already current. Never installs anything — that is `install_update`'s job,
+/// so the frontend can show the version and ask before touching the app.
 #[tauri::command]
-async fn check_for_update(app: tauri::AppHandle) -> Result<String, String> {
+async fn check_for_update(app: tauri::AppHandle) -> Result<Option<UpdateInfo>, String> {
     use tauri_plugin_updater::UpdaterExt;
     let updater = app.updater().map_err(|e| e.to_string())?;
     match updater.check().await {
-        Ok(Some(update)) => {
-            let version = update.version.clone();
-            update
-                .download_and_install(|_, _| {}, || {})
-                .await
-                .map_err(|e| e.to_string())?;
-            Ok(format!("Updated to {version}. Restart Soupz to finish."))
-        }
-        Ok(None) => Ok("You are on the latest version.".into()),
+        Ok(Some(update)) => Ok(Some(UpdateInfo {
+            version: update.version.clone(),
+            current_version: update.current_version.clone(),
+            notes: update.body.clone(),
+        })),
+        Ok(None) => Ok(None),
         Err(e) => Err(e.to_string()),
     }
+}
+
+/// Download + install the pending update, emitting `updater://progress`
+/// ({ downloaded, total }) as bytes arrive, then relaunch into the fresh build.
+/// `app.restart()` is exactly what tauri-plugin-process's `restart` command
+/// calls internally, so no extra plugin or permission is needed.
+#[tauri::command]
+async fn install_update(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri::Emitter;
+    use tauri_plugin_updater::UpdaterExt;
+
+    let updater = app.updater().map_err(|e| e.to_string())?;
+    let update = updater
+        .check()
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| "No update available".to_string())?;
+
+    let app_for_progress = app.clone();
+    let mut downloaded: u64 = 0;
+    update
+        .download_and_install(
+            move |chunk_length, content_length| {
+                downloaded += chunk_length as u64;
+                let _ = app_for_progress.emit(
+                    "updater://progress",
+                    serde_json::json!({ "downloaded": downloaded, "total": content_length }),
+                );
+            },
+            || {},
+        )
+        .await
+        .map_err(|e| e.to_string())?;
+
+    // Relaunch into the freshly-installed bundle. Diverges (`-> !`), so this
+    // is the function's terminating expression.
+    app.restart();
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![set_tray_progress, check_for_update])
+        .invoke_handler(tauri::generate_handler![set_tray_progress, check_for_update, install_update])
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_log::Builder::default().build())
         .plugin(tauri_plugin_autostart::init(

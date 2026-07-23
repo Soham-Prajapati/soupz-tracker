@@ -17,6 +17,103 @@ function useTrayProgress(done, total) {
 }
 
 const isDesktop = () => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+
+// Self-updating. The Rust side checks/installs; this drives the UI around it.
+// status: 'idle' | 'checking' | 'available' | 'none' | 'downloading' | 'error'
+function useUpdater() {
+  const [status, setStatus] = useState('idle');
+  const [info, setInfo] = useState(null);
+  const [progress, setProgress] = useState(-1); // 0..1, or -1 when indeterminate
+  const [error, setError] = useState(null);
+
+  const check = async ({ silent = false } = {}) => {
+    if (!isDesktop()) return null;
+    setError(null);
+    if (!silent) setStatus('checking');
+    try {
+      const { invoke } = await import('@tauri-apps/api/core');
+      const upd = await invoke('check_for_update');
+      if (upd) { setInfo(upd); setStatus('available'); return upd; }
+      setStatus(silent ? 'idle' : 'none'); // stay quiet on the launch check
+      return null;
+    } catch (e) {
+      setError(String(e));
+      setStatus(silent ? 'idle' : 'error'); // offline on launch must never nag
+      return null;
+    }
+  };
+
+  const install = async () => {
+    if (!isDesktop()) return;
+    setError(null);
+    setStatus('downloading');
+    setProgress(-1);
+    let unlisten = () => {};
+    try {
+      // Best-effort progress. If a window can't listen, we just stay indeterminate.
+      try {
+        const { listen } = await import('@tauri-apps/api/event');
+        unlisten = await listen('updater://progress', (e) => {
+          const { downloaded, total } = e.payload || {};
+          if (total) setProgress(Math.min(1, downloaded / total));
+        });
+      } catch {}
+      const { invoke } = await import('@tauri-apps/api/core');
+      await invoke('install_update'); // app relaunches; this usually never resolves
+    } catch (e) {
+      setError(String(e));
+      setStatus('error');
+    } finally {
+      unlisten();
+    }
+  };
+
+  return { status, info, progress, error, check, install, setStatus };
+}
+
+// Bottom-right notice shown in the main window only.
+function UpdateToast({ up, onDismiss }) {
+  const { status, info, progress, error } = up;
+  if (status !== 'available' && status !== 'downloading' && status !== 'error') return null;
+  return (
+    <div style={{
+      position: 'fixed', right: 18, bottom: 18, zIndex: 9999, maxWidth: 320,
+      padding: '14px 16px', background: 'var(--paper)', border: '2px solid var(--ink)',
+      borderRadius: 12, boxShadow: '0 12px 34px rgba(0,0,0,.20)', fontSize: 13.5,
+    }}>
+      {status === 'available' && info && (
+        <>
+          <div style={{ fontWeight: 800, marginBottom: 4 }}>Update to v{info.version} available</div>
+          <div className="lede" style={{ marginTop: 0, marginBottom: 12, fontSize: 13 }}>
+            You're on v{info.current_version}. It installs and relaunches in a few seconds.
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn go" onClick={up.install}>Update now</button>
+            <button className="btn" onClick={onDismiss}>Later</button>
+          </div>
+        </>
+      )}
+      {status === 'downloading' && (
+        <>
+          <div style={{ fontWeight: 800, marginBottom: 8 }}>Updating Soupz…</div>
+          {progress >= 0
+            ? <Noodle pct={progress} c="var(--accent-c)" />
+            : <div className="lede" style={{ marginTop: 0, fontSize: 13 }}>Downloading…</div>}
+          <div className="lede" style={{ marginTop: 8, fontSize: 12 }}>Soupz will relaunch when it's done.</div>
+        </>
+      )}
+      {status === 'error' && (
+        <>
+          <div style={{ fontWeight: 800, marginBottom: 6 }}>Update failed</div>
+          <div className="lede" style={{ marginTop: 0, marginBottom: 10, fontSize: 12.5 }}>
+            {String(error || 'Please try again later.')}
+          </div>
+          <button className="btn" onClick={onDismiss}>Dismiss</button>
+        </>
+      )}
+    </div>
+  );
+}
 import { RESOURCES } from './data/resources.js';
 
 // Tracks are ingredients. The label is what goes in the bowl, not what the data calls it.
@@ -180,6 +277,7 @@ function Empty({ line }) {
 function Settings({ theme, setTheme, accent, setAccent, sync, done }) {
   const solved = ALL_PROBLEMS.filter(p => done['p-' + p.n]).length;
   const [launch, setLaunch] = useState(null);
+  const up = useUpdater();
   const desktop = isDesktop();
 
   useEffect(() => {
@@ -237,6 +335,38 @@ function Settings({ theme, setTheme, accent, setAccent, sync, done }) {
             <button className={'sw' + (launch ? ' on' : '')} onClick={toggleLaunch}
               role="switch" aria-checked={!!launch} disabled={launch === null}><i /></button>
           </div>
+        </Slip>
+      )}
+
+      {desktop && (
+        <Slip title="Software update" big>
+          <div className="lede" style={{ marginTop: 0, marginBottom: 12, fontSize: 13 }}>
+            Soupz updates itself in place and relaunches — you never download a new build by hand.
+          </div>
+          {up.status === 'available' && up.info ? (
+            <div className="sw-row">
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 14 }}>Update to v{up.info.version} ready</div>
+                <div className="lede" style={{ marginTop: 4, fontSize: 13 }}>You are on v{up.info.current_version}.</div>
+              </div>
+              <button className="btn go" onClick={up.install}>Update now</button>
+            </div>
+          ) : up.status === 'downloading' ? (
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>Downloading update…</div>
+              {up.progress >= 0
+                ? <Noodle pct={up.progress} c="var(--accent-c)" />
+                : <div className="lede" style={{ marginTop: 0, fontSize: 13 }}>Soupz will relaunch when it's done.</div>}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <button className="btn" onClick={() => up.check()} disabled={up.status === 'checking'}>
+                {up.status === 'checking' ? 'Checking…' : 'Check for updates'}
+              </button>
+              {up.status === 'none' && <span className="lede" style={{ fontSize: 13 }}>You're on the latest version.</span>}
+              {up.status === 'error' && <span className="lede" style={{ fontSize: 13 }}>Couldn't check right now.</span>}
+            </div>
+          )}
         </Slip>
       )}
 
@@ -332,6 +462,7 @@ export default function App() {
   const [accent, setAccent] = useStore('accent', 'miso');
   const [sync, setSync] = useState('connecting');
   const [openMod, setOpenMod] = useState(null);
+  const up = useUpdater();
 
   // Every scheduled task id for one module's pass, so a click marks the whole pass.
   const modTaskIds = (code, m, pass) => {
@@ -373,6 +504,16 @@ export default function App() {
     if (theme) document.documentElement.setAttribute('data-t', theme);
     else document.documentElement.removeAttribute('data-t');
   }, [theme]);
+
+  // Silently check for an update on launch — MAIN WINDOW ONLY. The panel and
+  // settings windows load this same bundle; the query-param guard keeps them
+  // from firing their own check. Delayed so it never competes with first paint.
+  useEffect(() => {
+    if (!isDesktop()) return;
+    if (new URLSearchParams(location.search).get('window')) return; // panel/settings → skip
+    const t = setTimeout(() => { up.check({ silent: true }); }, 1500);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const F = FLAVOURS.find(a => a.id === accent) || FLAVOURS[0];
@@ -477,6 +618,7 @@ export default function App() {
   return (
     <div className="app">
       <InkDefs />
+      <UpdateToast up={up} onDismiss={() => up.setStatus('idle')} />
 
       {/* ---------------- masthead ---------------- */}
       <div className="menu">

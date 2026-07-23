@@ -1,5 +1,5 @@
 {
-  "buildCommand": "vite build",
-  "outputDirectory": "dist",
+  "buildCommand": "npm run build:web",
+  "outputDirectory": "dist-web",
   "framework": null
 }

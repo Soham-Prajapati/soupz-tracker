@@ -5,6 +5,7 @@ import { LABS, LAB_ORDER, LAB_START } from './data/labs.js';
 import * as Sync from './sync.js';
 import { enable as autoOn, disable as autoOff, isEnabled as autoIs } from '@tauri-apps/plugin-autostart';
 import { InkDefs, Bowl, Cup, Noodle, Tick, Rule, EmptyPot, GARNISH } from './soup.jsx';
+import { AccountBadge } from './Auth.jsx';
 
 // Keep the menu bar count in sync with today's progress.
 function useTrayProgress(done, total) {
@@ -382,6 +383,7 @@ function Settings({ theme, setTheme, accent, setAccent, sync, done }) {
             ? 'Changes are being saved on this device only. They will upload once you are back online.'
             : 'Checking the connection.'}
         </div>
+        <AccountBadge />
       </Slip>
 
       {desktop && (

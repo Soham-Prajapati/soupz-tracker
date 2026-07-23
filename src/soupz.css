@@ -644,3 +644,35 @@ body.panel-mode::after{display:none}
   *,*::before,*::after{animation:none!important;transition:none!important}
   .steam,.smark-p{opacity:.45}
 }
+
+/* --------------------------------------------------------------------------
+   21. AUTH — the sign-in gate, on the same worktop as the rest
+   -------------------------------------------------------------------------- */
+.auth-wrap{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px}
+.auth-card{
+  width:100%;max-width:420px;padding:30px 28px 26px;position:relative;z-index:1;
+  background:var(--paper3);border:2.5px solid var(--ink);border-radius:var(--hand);
+  box-shadow:var(--lift2);
+}
+.auth-mark{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.auth-name{font-family:var(--display);font-variation-settings:"SOFT" 100,"WONK" 1;
+  font-weight:800;font-size:30px;letter-spacing:-.03em;line-height:1}
+.auth-name i{font-style:normal;color:var(--broth2)}
+.auth-tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink3);margin-top:5px}
+.auth-h{font-family:var(--display);font-size:21px;font-weight:700;margin-bottom:8px}
+.auth-google{width:100%;justify-content:center;font-size:15px;padding:12px 16px}
+.auth-or{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--ink3);
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.auth-or::before,.auth-or::after{content:"";flex:1;height:2px;
+  background:repeating-linear-gradient(90deg,var(--rule) 0 6px,transparent 6px 12px)}
+.auth-form{display:flex;flex-direction:column;gap:9px}
+.auth-input{
+  width:100%;padding:12px 14px;font:inherit;font-size:15px;color:var(--ink);
+  background:var(--paper);border:2px solid var(--rule2);border-radius:12px;outline:none;
+}
+.auth-input:focus{border-color:var(--broth2)}
+.auth-form .btn{width:100%;justify-content:center;padding:11px 16px}
+.auth-err{margin-top:12px;color:var(--hot);font-size:13px;font-weight:600}
+.auth-fine{margin-top:16px;color:var(--ink3);font-size:12px;line-height:1.5}
+.auth-sent .lede{margin:6px 0 16px}

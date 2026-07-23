@@ -8,3 +8,4 @@ src-tauri/target
 .DS_Store
 **/.DS_Store
 pnpm-lock.yaml
+profile.md

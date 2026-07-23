@@ -74,9 +74,9 @@
 
 /* night kitchen */
 @media (prefers-color-scheme:dark){:root:not([data-t="light"]){
-  --paper:#17120E; --paper2:#211A14; --paper3:#241C15; --paper-edge:#0E0B08;
-  --ink:#F4E7D2; --ink2:#C3B098; --ink3:#8D7C67;
-  --rule:#4A3C2E; --rule2:#5F4E3C;
+  --paper:#161009; --paper2:#241C14; --paper3:#2C2318; --paper-edge:#0A0705;
+  --ink:#F6EAD6; --ink2:#CBB99F; --ink3:#A48F75;
+  --rule:#5E4C38; --rule2:#735C45;
   --steam:color-mix(in srgb,var(--ink) 26%,transparent);
   --dsa:#F0994D; --contest:#EC6752; --lld:#82C46B; --ai:#54C3BE;
   --college:#E0B451; --aptitude:#A8CE63; --admin:#C0A088; --content:#E2749F;
@@ -85,9 +85,9 @@
   --lift2:0 3px 0 rgba(0,0,0,.55),0 18px 38px -16px rgba(0,0,0,.95);
 }}
 :root[data-t="dark"]{
-  --paper:#17120E; --paper2:#211A14; --paper3:#241C15; --paper-edge:#0E0B08;
-  --ink:#F4E7D2; --ink2:#C3B098; --ink3:#8D7C67;
-  --rule:#4A3C2E; --rule2:#5F4E3C;
+  --paper:#161009; --paper2:#241C14; --paper3:#2C2318; --paper-edge:#0A0705;
+  --ink:#F6EAD6; --ink2:#CBB99F; --ink3:#A48F75;
+  --rule:#5E4C38; --rule2:#735C45;
   --steam:color-mix(in srgb,var(--ink) 26%,transparent);
   --dsa:#F0994D; --contest:#EC6752; --lld:#82C46B; --ai:#54C3BE;
   --college:#E0B451; --aptitude:#A8CE63; --admin:#C0A088; --content:#E2749F;

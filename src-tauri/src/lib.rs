@@ -18,7 +18,7 @@ fn open_settings(app: &tauri::AppHandle) {
         "settings",
         WebviewUrl::App("index.html?window=settings".into()),
     )
-    .title("Soupz Settings")
+    .title("Soup Tracker Settings")
     .inner_size(560.0, 620.0)
     .resizable(true)
     .build();
@@ -64,7 +64,7 @@ fn toggle_panel(app: &tauri::AppHandle, icon: tauri::PhysicalPosition<f64>) {
         "panel",
         WebviewUrl::App("index.html?window=panel".into()),
     )
-    .title("Soupz")
+    .title("Soup Tracker")
     .inner_size(360.0, 540.0)
     .resizable(false)
     .decorations(false)
@@ -96,7 +96,7 @@ fn toggle_panel(app: &tauri::AppHandle, icon: tauri::PhysicalPosition<f64>) {
 fn set_tray_progress(app: tauri::AppHandle, done: u32, total: u32) {
     if let Some(tray) = app.tray_by_id("main-tray") {
         let _ = tray.set_title(Some(format!("{}/{}", done, total)));
-        let _ = tray.set_tooltip(Some(&format!("Soupz — {} of {} done today", done, total)));
+        let _ = tray.set_tooltip(Some(&format!("Soup Tracker — {} of {} done today", done, total)));
     }
 }
 
@@ -181,7 +181,7 @@ pub fn run() {
             let settings_item = MenuItem::with_id(app, "settings", "Settings…", true, Some("CmdOrCtrl+Comma"))?;
             let app_submenu = Submenu::with_items(
                 app,
-                "Soupz",
+                "Soup Tracker",
                 true,
                 &[
                     &PredefinedMenuItem::about(app, None, None)?,
@@ -224,7 +224,7 @@ pub fn run() {
             });
 
             // ---- Menu bar tray icon ----
-            let tray_open = MenuItem::with_id(app, "open", "Open Soupz", true, None::<&str>)?;
+            let tray_open = MenuItem::with_id(app, "open", "Open Soup Tracker", true, None::<&str>)?;
             let tray_settings = MenuItem::with_id(app, "tsettings", "Settings…", true, None::<&str>)?;
             let tray_quit = PredefinedMenuItem::quit(app, Some("Quit"))?;
             let tray_menu = Menu::with_items(app, &[&tray_open, &tray_settings, &tray_quit])?;
@@ -235,7 +235,7 @@ pub fn run() {
                         .unwrap_or_else(|_| app.default_window_icon().unwrap().clone()),
                 )
                 .icon_as_template(true)
-                .tooltip("Soupz — today's plan")
+                .tooltip("Soup Tracker — today's plan")
                 .menu(&tray_menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id().as_ref() {

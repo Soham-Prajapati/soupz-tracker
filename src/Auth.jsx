@@ -70,7 +70,7 @@ function SignIn() {
         <div className="auth-mark">
           <Bowl pct={0.62} size={80} heat garnish={[{ kind: 'leaf', c: 'var(--lld)' }]} />
           <div>
-            <div className="auth-name">Soup<i>z</i></div>
+            <div className="auth-name">Soup <i>Tracker</i></div>
             <div className="auth-tag">Your study plan, maintained.</div>
           </div>
         </div>

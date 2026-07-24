@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Soupz",
-  "mainBinaryName": "Soupz",
+  "productName": "Soup Tracker",
+  "mainBinaryName": "SoupTracker",
   "version": "0.1.1",
   "identifier": "app.soupz.desktop",
   "build": {
@@ -13,7 +13,7 @@
   "app": {
     "windows": [
       {
-        "title": "Soupz",
+        "title": "Soup Tracker",
         "width": 1280,
         "height": 880,
         "resizable": true,

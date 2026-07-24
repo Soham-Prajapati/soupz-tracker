@@ -21,8 +21,8 @@ export default defineConfig({
           injectRegister: 'auto',
           includeAssets: ['apple-touch-icon.png'],
           manifest: {
-            name: 'Soupz',
-            short_name: 'Soupz',
+            name: 'Soup Tracker',
+            short_name: 'Soup Tracker',
             description: 'Your study plan, maintained.',
             theme_color: '#F3EADA',
             background_color: '#F2E7D3',

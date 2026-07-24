@@ -96,11 +96,11 @@ function UpdateToast({ up, onDismiss }) {
       )}
       {status === 'downloading' && (
         <>
-          <div style={{ fontWeight: 800, marginBottom: 8 }}>Updating Soupz…</div>
+          <div style={{ fontWeight: 800, marginBottom: 8 }}>Updating Soup Tracker…</div>
           {progress >= 0
             ? <Noodle pct={progress} c="var(--accent-c)" />
             : <div className="lede" style={{ marginTop: 0, fontSize: 13 }}>Downloading…</div>}
-          <div className="lede" style={{ marginTop: 8, fontSize: 12 }}>Soupz will relaunch when it's done.</div>
+          <div className="lede" style={{ marginTop: 8, fontSize: 12 }}>Soup Tracker will relaunch when it's done.</div>
         </>
       )}
       {status === 'error' && (
@@ -329,7 +329,7 @@ function Settings({ theme, setTheme, accent, setAccent, sync, done }) {
             <div>
               <div style={{ fontWeight: 800, fontSize: 14 }}>Open at login</div>
               <div className="lede" style={{ marginTop: 4, fontSize: 13 }}>
-                Soupz starts with your Mac and sits in the menu bar, so the first thing
+                Soup Tracker starts with your Mac and sits in the menu bar, so the first thing
                 you see each morning is what is on today.
               </div>
             </div>
@@ -342,7 +342,7 @@ function Settings({ theme, setTheme, accent, setAccent, sync, done }) {
       {desktop && (
         <Slip title="Software update" big>
           <div className="lede" style={{ marginTop: 0, marginBottom: 12, fontSize: 13 }}>
-            Soupz updates itself in place and relaunches — you never download a new build by hand.
+            Soup Tracker updates itself in place and relaunches — you never download a new build by hand.
           </div>
           {up.status === 'available' && up.info ? (
             <div className="sw-row">
@@ -357,7 +357,7 @@ function Settings({ theme, setTheme, accent, setAccent, sync, done }) {
               <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>Downloading update…</div>
               {up.progress >= 0
                 ? <Noodle pct={up.progress} c="var(--accent-c)" />
-                : <div className="lede" style={{ marginTop: 0, fontSize: 13 }}>Soupz will relaunch when it's done.</div>}
+                : <div className="lede" style={{ marginTop: 0, fontSize: 13 }}>Soup Tracker will relaunch when it's done.</div>}
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -392,7 +392,7 @@ function Settings({ theme, setTheme, accent, setAccent, sync, done }) {
           <div className="kb-row"><span>Hide window</span><kbd>⌘ H</kbd></div>
           <div className="kb-row"><span>Quit</span><kbd>⌘ Q</kbd></div>
           <div className="lede" style={{ fontSize: 13 }}>
-            Closing the window keeps Soupz simmering in the menu bar. Click the icon there
+            Closing the window keeps Soup Tracker simmering in the menu bar. Click the icon there
             for today's tasks, or Quit to close it fully.
           </div>
         </Slip>
@@ -627,7 +627,7 @@ export default function App() {
         <div className="menu-in">
           <div className="mark">
             <div className="pot"><Bowl pct={pc(doneTasks, totalTasks)} size={34} heat={doneCount > 0} flat /></div>
-            <div className="mark-n">Soup<i>z</i></div>
+            <div className="mark-n">Soup <i>Tracker</i></div>
             <div className="mark-s">Semester V · Day {elapsed} of {SCHEDULE.length}</div>
           </div>
           <span className={'pot-dot s-' + sync} title={

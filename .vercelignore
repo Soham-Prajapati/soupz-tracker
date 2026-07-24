@@ -1,0 +1,16 @@
+# Only the web build needs uploading. Exclude everything heavy/irrelevant.
+node_modules
+src-tauri
+dist
+dist-web
+reference
+swiftbar
+design-shots
+supabase
+*.bak
+pnpm-lock.yaml
+plan.json
+Campaign.html
+.env
+.env.local
+.env.example

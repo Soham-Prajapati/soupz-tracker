@@ -16,3 +16,11 @@ design-shots/
 .supabase-product-db-password
 .env
 supabase/.temp/
+.env*
+# personal / legacy / generated — kept local, never public
+reference/
+swiftbar/
+Campaign.html
+plan.json
+SYLLABUS-GAPS.md
+public/Campaign.app.tar.gz

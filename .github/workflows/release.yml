@@ -1,0 +1,33 @@
+name: release
+# Tag a version (e.g. `git tag v0.1.2 && git push --tags`) → builds the macOS app,
+# signs the updater artifact, and publishes a GitHub Release automatically.
+# Free CI minutes require this repo to be public.
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  macos:
+    runs-on: macos-14   # Apple Silicon
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci
+      # No VITE_SUPABASE_* here → the desktop build is local-only (ungated),
+      # matching the shipped Mac app. The multi-user product lives on the web.
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Soupz ${{ github.ref_name }}"
+          releaseBody: "Download the .dmg below, or `brew install --cask soham-prajapati/soupz/soupz`."
+          releaseDraft: false
+          prerelease: false

@@ -13,3 +13,6 @@ profile.md
 PRODUCT-PLAN.md
 design-shots/
 *.bak
+.supabase-product-db-password
+.env
+supabase/.temp/

@@ -36,6 +36,10 @@ function Splash() {
   );
 }
 
+// Google is only shown once OAuth is configured (VITE_ENABLE_GOOGLE=true).
+// Until then we ship email-only, which needs no Google Cloud setup.
+const googleEnabled = import.meta.env.VITE_ENABLE_GOOGLE === 'true';
+
 function SignIn() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
@@ -82,11 +86,14 @@ function SignIn() {
           </div>
         ) : (
           <>
-            <button className="btn go auth-google" onClick={google} disabled={busy === 'google'}>
-              {busy === 'google' ? 'Opening Google…' : 'Continue with Google'}
-            </button>
-
-            <div className="auth-or"><span>or</span></div>
+            {googleEnabled && (
+              <>
+                <button className="btn go auth-google" onClick={google} disabled={busy === 'google'}>
+                  {busy === 'google' ? 'Opening Google…' : 'Continue with Google'}
+                </button>
+                <div className="auth-or"><span>or</span></div>
+              </>
+            )}
 
             <form onSubmit={magic} className="auth-form">
               <input

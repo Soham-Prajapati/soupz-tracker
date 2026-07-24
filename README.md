@@ -88,3 +88,16 @@ public/             PWA icons + favicon
 ## Tech
 
 React 18 · Vite 6 · Tauri v2 · Supabase (Postgres + Auth + RLS) · vite-plugin-pwa.
+
+## License
+
+Copyright © 2026 Soham Prajapati.
+
+Soupz is free and open source under the **GNU AGPL-3.0** ([`LICENSE`](LICENSE)).
+You may use, study, modify and share it — provided you **keep the attribution**
+and **release your changes under the same license**, including when you run a
+modified version as a network service. See the license for the exact terms.
+
+Soupz is free to use today. A hosted/subscription tier may be offered later; the
+AGPL keeps the source open regardless, and separate commercial terms can be
+arranged for anyone who cannot comply with the copyleft.

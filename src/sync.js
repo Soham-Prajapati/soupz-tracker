@@ -6,9 +6,10 @@
 // point at the multi-user Supabase project, auth + per-user cloud sync switch on.
 //
 // Per-user isolation is enforced by RLS (policy: auth.uid() = user_id), so reads
-// need no manual user_id filter. The user's AI provider API key is NEVER handled
-// here — it lives in localStorage only.
+// need no manual user_id filter. AI-provider keys are never handled here; the
+// optional extractor keeps its one-use key only in component memory.
 import { createClient } from '@supabase/supabase-js';
+import { emailOtpVerification, emailSignInOptions, isNativeRuntime } from './authFlow.js';
 
 const SB_URL = import.meta.env.VITE_SUPABASE_URL;
 const SB_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -31,12 +32,21 @@ export function signInWithGoogle() {
   });
 }
 
-export function signInWithMagicLink(email) {
+export function sendEmailSignIn(email) {
   if (!configured) return Promise.resolve({ error: null });
+  const native = isNativeRuntime();
   return supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: window.location.origin },
+    options: emailSignInOptions({
+      native,
+      webOrigin: native ? undefined : window.location.origin,
+    }),
   });
+}
+
+export function verifyEmailOtp(email, token) {
+  if (!configured) return Promise.resolve({ data: null, error: null });
+  return supabase.auth.verifyOtp(emailOtpVerification(email, token));
 }
 
 export function signOut() {
@@ -79,7 +89,7 @@ export async function pullAll() {
   for (const r of [progress, pushed, opps]) if (r.error) throw r.error;
 
   return {
-    done: Object.fromEntries(progress.data.filter(r => r.done).map(r => [r.id, true])),
+    done: Object.fromEntries(progress.data.map(r => [r.id, r.done])),
     pushed: Object.fromEntries(pushed.data.map(r => [r.id, r.to_date])),
     opportunities: opps.data,
   };
@@ -109,7 +119,7 @@ export async function pushLocal(done, pushed) {
   if (!configured) return;
   const user_id = await requireUserId();
 
-  const progressRows = Object.entries(done).filter(([, v]) => v).map(([id]) => ({ user_id, id, done: true }));
+  const progressRows = Object.entries(done).map(([id, value]) => ({ user_id, id, done: Boolean(value) }));
   if (progressRows.length) {
     const { error } = await supabase.from('progress').upsert(progressRows, { onConflict: 'user_id,id' });
     if (error) throw error;
@@ -119,4 +129,60 @@ export async function pushLocal(done, pushed) {
     const { error } = await supabase.from('pushed').upsert(pushedRows, { onConflict: 'user_id,id' });
     if (error) throw error;
   }
+}
+
+// Flushes the Rust store's durable outbox. Returning false means there is no
+// signed-in cloud destination yet; callers must retain the pending rows.
+export async function pushPending(done, pushed) {
+  if (!configured) return false;
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData.session) return false;
+  const user_id = sessionData.session.user.id;
+  const updated_at = new Date().toISOString();
+
+  const progressRows = Object.entries(done).map(([id, value]) => ({
+    user_id,
+    id,
+    done: Boolean(value),
+    updated_at,
+  }));
+  if (progressRows.length) {
+    const { error } = await supabase.from('progress')
+      .upsert(progressRows, { onConflict: 'user_id,id' });
+    if (error) throw error;
+  }
+
+  const pushedRows = Object.entries(pushed).map(([id, to_date]) => ({
+    user_id,
+    id,
+    to_date,
+    updated_at,
+  }));
+  if (pushedRows.length) {
+    const { error } = await supabase.from('pushed')
+      .upsert(pushedRows, { onConflict: 'user_id,id' });
+    if (error) throw error;
+  }
+  return true;
+}
+
+// Supabase is a convergence transport, never desktop authority. Realtime rows
+// are merged by the Rust store, which preserves any local value still pending.
+export async function subscribeTrackerState(onChange) {
+  if (!configured) return () => {};
+  const user = await getUser();
+  if (!user) return () => {};
+  const filter = `user_id=eq.${user.id}`;
+  const channel = supabase
+    .channel(`tracker-state-${user.id}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'progress', filter }, payload => {
+      const row = payload.new;
+      if (row?.id && typeof row.done === 'boolean') onChange({ done: { [row.id]: row.done } });
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'pushed', filter }, payload => {
+      const row = payload.new;
+      if (row?.id && row.to_date) onChange({ pushed: { [row.id]: row.to_date } });
+    })
+    .subscribe();
+  return () => { supabase.removeChannel(channel); };
 }

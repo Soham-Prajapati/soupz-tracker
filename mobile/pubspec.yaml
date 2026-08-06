@@ -1,0 +1,23 @@
+name: soupz_tracker_mobile
+description: "Minimal native contract scaffold for Soupz Tracker."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/fixtures/plan-v1.json
+    - assets/fixtures/today-v1.json
+    - assets/fixtures/widget-v1.json

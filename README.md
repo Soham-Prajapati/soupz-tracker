@@ -1,103 +1,223 @@
-# Soupz
+# Soupz Tracker
 
-**You bring your own AI and your own plan. Soupz maintains it.**
+**Bring your own plan. Soupz maintains it.**
 
-A study-plan tracker that doesn't just generate a plan — it *maintains* one:
-reschedules when you fall behind, spaces revision so it sticks, tracks attendance
-against your college's rule, and moves everything around your real exam dates.
+Soupz Tracker is a local-first plan maintainer. A new install starts empty: add
+a habit with a name and cadence, or review and import a versioned JSON plan.
+There is no bundled curriculum, authored schedule, or generated default plan —
+the tracker maintains plans, it does not author them.
 
-One React codebase ships two ways:
+## Who it is for
 
-- **Web / PWA** — installable, offline-capable, deployed on Vercel.
-- **macOS menu-bar app** — a native Tauri shell with a tray panel and self-update.
+- People who already have a plan — a habit cadence, a study or training
+  schedule, a project timeline — and want it maintained, projected onto days,
+  and rescheduled honestly, without an app inventing content for them.
+- Hackathon teams who want workstreams, milestones, blockers, and demo
+  readiness in one portable JSON document they can pass around.
+- Agent and automation users, through a local MCP server over the same
+  versioned engine.
 
----
+## Current maturity
 
-## Quick start
+Pre-release. The web PWA and the macOS desktop app build and pass their test
+suites locally, but there is no signed, notarized, or published release yet,
+and automatic updates remain disabled until a real signed release channel
+exists. The mobile directory is a compilable Flutter contract scaffold, not a
+claimed mobile product. Do not treat a local `.app` or `.dmg` as a release.
 
-```bash
-npm install
-cp .env.example .env      # fill in Supabase values (or leave blank for local-only)
-npm run dev               # http://localhost:5173
+## Architecture
+
+```text
+packages/core/              plan schema, repository and deterministic engine
+packages/mcp/               six-tool local MCP surface over the core
+src/App.jsx                 generic Today, Plans and Settings workspace
+src/genericTracker.js       browser projection/write/reschedule adapter
+src/HackathonWorkspace.jsx  hackathon editor and review-first import UI
+src/hackathonMode.js        immutable hackathon plan edits and projection
+src/hackathonImport.js      extractor boundary, validation and portable JSON
+src/windowStore.js          cross-window transport and Rust state client
+src/sync.js                 optional per-user progress convergence
+src/soup.jsx                progress SVG components
+src/soupz.css               responsive visual system
+src-tauri/                  atomic desktop state, tray and Tauri shell
+mobile/                     iOS/Android contract scaffold and fixtures
+supabase/                   optional backend schema and migrations
 ```
 
-With `.env` blank the app runs **local-only**: no sign-in, progress lives in
-`localStorage`. Fill in the two Supabase values and it switches to **multi-user**
-with per-user cloud sync.
+One deterministic engine (`packages/core`) owns the plan schema and all
+projections. The React workspace, the Tauri desktop shell, the MCP server, and
+the mobile contract scaffold are all clients of that engine. On desktop, a
+Rust-owned atomic state document is the single source of truth shared by every
+window and the tray; browser builds use local storage instead.
 
-## Environment
+## Prerequisites
+
+- Node.js 20 or newer with npm (CI builds on Node 20).
+- For the desktop app: stable Rust and the Tauri v2 platform prerequisites
+  (on macOS, the Xcode Command Line Tools).
+- Optional: a Supabase project, only for the connected account/sync mode.
+- Optional: Flutter, only for the mobile contract scaffold in `mobile/`.
+
+## Environment variables
+
+Copy `.env.example` to `.env` and fill values locally; never commit filled
+values. The optional Supabase transport reads only:
 
 | Variable | Purpose |
 |---|---|
-| `VITE_SUPABASE_URL` | Supabase project URL. Blank → local-only mode. |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anon (public) key. Safe to ship — RLS scopes every row to the signed-in user. |
-| `VITE_ENABLE_GOOGLE` | `true` to show "Continue with Google" (needs OAuth configured). Unset → email-only. |
+| `VITE_SUPABASE_URL` | Project URL; blank keeps the runtime local-only. |
+| `VITE_SUPABASE_ANON_KEY` | Public client key protected by per-user RLS. |
+| `VITE_ENABLE_GOOGLE` | Enables the optional Google auth control when auth UI is used. |
+| `SOUPZ_MCP_TOKEN` | Required only for the optional local MCP HTTP mode; stdio needs no token. |
 
-Never put the Supabase `service_role` key in the client.
+Never put a service-role key or an AI-provider key in the client environment.
 
-## Builds
-
-```bash
-npm run build       # single-file bundle in dist/  (used by the macOS app)
-npm run build:web   # PWA build in dist-web/        (deployed to the web)
-```
-
-The two are mutually exclusive per build: `build` inlines everything into one
-file (no service worker), `build:web` emits a service worker + manifest + hashed
-assets for offline use.
-
-## Deploy (web)
-
-Vercel builds `npm run build:web` → `dist-web/` (see `vercel.json`). Set the
-`VITE_SUPABASE_*` variables in the Vercel project so the deployed app has auth.
-
-## macOS app
+## Local development
 
 ```bash
-npm run tauri build   # signed .app + .dmg + updater artifacts
+npm install
+cp .env.example .env
+npm run dev          # web workspace on Vite
+npm run tauri dev    # desktop shell (requires Rust)
 ```
 
-The window loads the deployed web URL, so content self-updates; the app binary
-auto-updates via the signed updater manifest.
+Leave the Supabase values blank for local-only operation.
 
-## Multi-user backend (Supabase)
+## Tests
 
-1. Create a Supabase project.
-2. Apply `supabase/migrations/20260724000000_multiuser.sql` (per-user RLS on every
-   table — no API-key column; users' AI keys stay client-side).
-3. Enable Email (and optionally Google) auth; add your URLs to the redirect
-   allow-list.
-4. Put the project URL + anon key in `.env` (and in Vercel).
-
-## Project structure
-
-```
-src/
-  App.jsx           the app: today / academics / calendar / … views
-  Auth.jsx          sign-in gate (local-only fallback when unconfigured)
-  sync.js           auth-aware Supabase sync, per-user
-  InstallPrompt.jsx PWA add-to-home-screen prompt
-  soupz.css         the whole visual system (warm, hand-drawn)
-  soup.jsx          the bowl / SVG components
-  data/             plan content (schedule, DSA, academics, …)
-src-tauri/          the macOS shell (tray, panel, updater) — Rust + Tauri v2
-supabase/           SQL migrations
-public/             PWA icons + favicon
+```bash
+npm test                                              # Node test suite (src + packages)
+cargo test --locked --manifest-path src-tauri/Cargo.toml   # Rust state tests
 ```
 
-## Tech
+`npm test` runs the engine, MCP, workspace, and release-configuration suites,
+plus a privacy regression test that builds the production bundle and rejects
+known private campaign copy or imports from the removed data modules.
 
-React 18 · Vite 6 · Tauri v2 · Supabase (Postgres + Auth + RLS) · vite-plugin-pwa.
+## Production build
+
+```bash
+npm run build                            # single-file bundle embedded by Tauri
+npm run build:web                        # PWA output in dist-web
+npm run tauri build -- --bundles app,dmg # local macOS desktop bundles
+```
+
+## Installation
+
+There is no published install channel yet. Until a signed release exists,
+build from source with the commands above and use the resulting `.app`, or
+install the PWA from a `npm run preview:web` serve. The release workflow and a
+Homebrew tap are prepared as the intended future channels.
+
+## First-run setup
+
+A fresh install opens empty, with no account required. Add a habit with a name
+and cadence, or import a versioned JSON plan through the review-first import
+card. Nothing is saved from an import until you confirm the reviewed candidate.
+Connected desktop builds additionally require the Supabase email templates
+described in [auth and distribution](docs/AUTH_AND_DISTRIBUTION.md) so the app
+receives a six-digit sign-in code.
+
+## Normal daily use
+
+The standard workspace renders every user-owned plan together. Track colours
+travel with plan data, completion remains separate from structure, and a task
+can move to any date with an explicit undo. Missed and empty days are neutral;
+streaks are derived context, not punishment. On desktop the tray mirrors the
+main window instantly, and both survive restart through the same Rust state
+document.
+
+Hackathon mode uses the same generic schema for workstreams, milestones,
+blockers, and demo readiness. Its optional extractor sends only text the user
+pastes to an endpoint they configure, holds the key in component memory for one
+request, and requires review before a plan is saved.
+
+## Optional integrations
+
+- **Supabase** — account sign-in and per-user progress sync; blank variables
+  keep everything local. See [auth and distribution](docs/AUTH_AND_DISTRIBUTION.md).
+- **Google sign-in** — an optional auth control behind `VITE_ENABLE_GOOGLE`.
+- **MCP** — `npm run mcp` serves the six-tool local MCP surface over stdio;
+  HTTP mode is optional, binds to `127.0.0.1` only, and requires
+  `SOUPZ_MCP_TOKEN`. See the [MCP package](packages/mcp/README.md).
+- **Hackathon extractor** — user-configured endpoint, review-first, nothing
+  stored server-side by the tracker.
+
+## Troubleshooting
+
+- **App opens without an account and never syncs** — expected local-only mode;
+  set both `VITE_SUPABASE_*` variables at build time for the connected mode.
+- **Desktop sign-in email arrives without a six-digit code** — the Supabase
+  email templates from [auth and distribution](docs/AUTH_AND_DISTRIBUTION.md)
+  are not applied.
+- **Browser and desktop show different progress** — they use different stores
+  by design (local storage vs. the Rust state document); use one surface or the
+  connected mode to converge.
+- **MCP HTTP mode refuses to start** — set `SOUPZ_MCP_TOKEN` and a port, or use
+  the default stdio transport, which needs neither.
+- **No automatic updates** — intentional; updates ship only once a signed
+  release channel exists.
+
+## Data storage and privacy
+
+Browser plan documents live in local storage. On desktop, plan documents use
+the atomic `engine-state.json` document in the app data directory — the same
+repository the local MCP server reads — and the app refreshes it while open.
+Browser builds cannot access the MCP process's local file and remain explicitly
+local. The client contains no analytics or telemetry. Nothing leaves the
+machine unless you configure Supabase (per-user rows behind RLS) or explicitly
+paste text into the hackathon extractor for one request to an endpoint you
+chose.
+
+Authored plan content is intentionally absent from this repository. The privacy
+regression test enforces this on every `npm test` run.
+
+## Backup, export and import
+
+Every plan exports as a versioned JSON file (`Export current plan` in both the
+standard and hackathon workspaces). The same files import through the
+review-first import cards, including the portable teammate JSON flow in
+hackathon mode. On desktop, copying `engine-state.json` from the app data
+directory backs up the full state; the JSON exports are the supported
+cross-install format.
+
+## Release process
+
+Pushing a `v*` tag runs the GitHub Actions release workflow on macOS (Apple
+Silicon), which builds the deliberately local-only mode — it passes no
+`VITE_SUPABASE_*` variables. Artifacts are unsigned until a real signing and
+notarization channel is set up, and the updater stays disabled until then.
+
+## Known limitations
+
+- No signed, notarized, or published builds; automatic updates disabled.
+- `mobile/` is a versioned contract scaffold only.
+- Local-only mode has no cross-device sync by design.
+- Connected mode requires manual Supabase setup, including RLS migration and
+  email templates, before distribution.
+
+## Relationship to other Soupz products
+
+Soupz Tracker is the generic, public member of the soupz family: it maintains
+whatever plan you bring and ships with no authored content. Personal plan
+content belongs in a user's own imports or in the separate private Soupz
+Personal product, and never in this repository. The tracker shares the family's
+visual system and the versioned plan schema consumed by its MCP surface and
+mobile contract.
+
+## Deeper documentation
+
+- [Hackathon mode](docs/HACKATHON_MODE.md)
+- [Auth and distribution](docs/AUTH_AND_DISTRIBUTION.md)
+- [MCP package](packages/mcp/README.md)
+- [Mobile contract scaffold](mobile/README.md)
+- [Contributing](CONTRIBUTING.md)
 
 ## License
 
 Copyright © 2026 Soham Prajapati.
 
-Soupz is free and open source under the **GNU AGPL-3.0** ([`LICENSE`](LICENSE)).
-You may use, study, modify and share it — provided you **keep the attribution**
-and **release your changes under the same license**, including when you run a
-modified version as a network service. See the license for the exact terms.
-
-Soupz is free to use today. A hosted/subscription tier may be offered later; the
-AGPL keeps the source open regardless, and separate commercial terms can be
-arranged for anyone who cannot comply with the copyleft.
+Soupz is licensed under the [GNU AGPL-3.0](LICENSE). You may use, study, modify,
+and share it under the license terms, including the network-use source
+obligation. Separate commercial terms can be arranged when AGPL compliance is
+not suitable.

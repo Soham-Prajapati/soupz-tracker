@@ -1,10 +1,141 @@
+mod engine_store;
+mod tracker_state;
+
+use std::{collections::BTreeMap, fs, io, path::Path};
 use tauri::utils::config::WindowEffectsConfig;
 use tauri::utils::{WindowEffect, WindowEffectState};
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem, Submenu},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager, WebviewUrl, WebviewWindowBuilder,
+    Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder,
 };
+use tracker_state::{MutationResult, TrackerPatch, TrackerState, TrackerStateStore, TRACKER_STATE_EVENT};
+use engine_store::EngineStateStore;
+use serde_json::Value;
+
+fn copy_missing_tree(source: &Path, target: &Path) -> io::Result<()> {
+    if !source.exists() { return Ok(()); }
+    if source.is_file() {
+        if !target.exists() {
+            if let Some(parent) = target.parent() { fs::create_dir_all(parent)?; }
+            fs::copy(source, target)?;
+        }
+        return Ok(());
+    }
+    fs::create_dir_all(target)?;
+    for entry in fs::read_dir(source)? {
+        let entry = entry?;
+        copy_missing_tree(&entry.path(), &target.join(entry.file_name()))?;
+    }
+    Ok(())
+}
+
+fn migrate_legacy_app_data(home: &Path, app_data: &Path) -> io::Result<()> {
+    let legacy_support = home.join("Library/Application Support/app.soupz.desktop");
+    for name in ["tracker-state.json", "engine-state.json"] {
+        copy_missing_tree(&legacy_support.join(name), &app_data.join(name))?;
+    }
+    let legacy_web_storage = home.join("Library/WebKit/app.soupz.desktop/WebsiteData/LocalStorage");
+    let current_web_storage = home.join("Library/WebKit/com.soupz.tracker/WebsiteData/LocalStorage");
+    copy_missing_tree(&legacy_web_storage, &current_web_storage)
+}
+
+fn broadcast_committed(app: &tauri::AppHandle, result: &MutationResult) {
+    if result.committed {
+        let _ = app.emit(TRACKER_STATE_EVENT, &result.state);
+    }
+}
+
+#[tauri::command]
+fn get_tracker_state(store: State<'_, TrackerStateStore>) -> TrackerState {
+    store.snapshot()
+}
+
+#[tauri::command]
+fn get_engine_plans(store: State<'_, EngineStateStore>) -> Result<Vec<Value>, String> {
+    store.plans().map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn upsert_engine_plan(store: State<'_, EngineStateStore>, plan: Value) -> Result<(), String> {
+    store.upsert_plan(plan).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn remove_engine_plan(store: State<'_, EngineStateStore>, plan_id: String) -> Result<(), String> {
+    store.remove_plan(&plan_id).map_err(|error| error.to_string())
+}
+
+#[tauri::command(rename_all = "camelCase")]
+fn migrate_tracker_state(
+    app: tauri::AppHandle,
+    store: State<'_, TrackerStateStore>,
+    legacy_done: BTreeMap<String, bool>,
+    legacy_pushed: BTreeMap<String, String>,
+) -> Result<MutationResult, String> {
+    let result = store
+        .migrate(legacy_done, legacy_pushed)
+        .map_err(|error| error.to_string())?;
+    broadcast_committed(&app, &result);
+    Ok(result)
+}
+
+#[tauri::command(rename_all = "camelCase")]
+fn apply_tracker_patch(
+    app: tauri::AppHandle,
+    store: State<'_, TrackerStateStore>,
+    expected_revision: u64,
+    done: BTreeMap<String, bool>,
+    pushed: BTreeMap<String, String>,
+) -> Result<MutationResult, String> {
+    let result = store
+        .apply(expected_revision, TrackerPatch { done, pushed })
+        .map_err(|error| error.to_string())?;
+    broadcast_committed(&app, &result);
+    Ok(result)
+}
+
+#[tauri::command]
+fn merge_tracker_remote(
+    app: tauri::AppHandle,
+    store: State<'_, TrackerStateStore>,
+    done: BTreeMap<String, bool>,
+    pushed: BTreeMap<String, String>,
+    complete: bool,
+) -> Result<MutationResult, String> {
+    let result = store
+        .merge_remote(TrackerPatch { done, pushed }, complete)
+        .map_err(|error| error.to_string())?;
+    broadcast_committed(&app, &result);
+    Ok(result)
+}
+
+#[tauri::command]
+fn acknowledge_tracker_sync(
+    app: tauri::AppHandle,
+    store: State<'_, TrackerStateStore>,
+    done: BTreeMap<String, bool>,
+    pushed: BTreeMap<String, String>,
+) -> Result<MutationResult, String> {
+    let result = store
+        .acknowledge(TrackerPatch { done, pushed })
+        .map_err(|error| error.to_string())?;
+    broadcast_committed(&app, &result);
+    Ok(result)
+}
+
+#[tauri::command]
+fn replace_tracker_account(
+    app: tauri::AppHandle,
+    store: State<'_, TrackerStateStore>,
+    done: BTreeMap<String, bool>,
+    pushed: BTreeMap<String, String>,
+) -> Result<MutationResult, String> {
+    let result = store.replace_for_account(TrackerPatch { done, pushed })
+        .map_err(|error| error.to_string())?;
+    broadcast_committed(&app, &result);
+    Ok(result)
+}
 
 /// Open (or focus) the Settings window. Cmd+, and the app menu both land here.
 fn open_settings(app: &tauri::AppHandle) {
@@ -18,7 +149,7 @@ fn open_settings(app: &tauri::AppHandle) {
         "settings",
         WebviewUrl::App("index.html?window=settings".into()),
     )
-    .title("Soup Tracker Settings")
+    .title("Soupz Tracker Settings")
     .inner_size(560.0, 620.0)
     .resizable(true)
     .build();
@@ -64,7 +195,7 @@ fn toggle_panel(app: &tauri::AppHandle, icon: tauri::PhysicalPosition<f64>) {
         "panel",
         WebviewUrl::App("index.html?window=panel".into()),
     )
-    .title("Soup Tracker")
+    .title("Soupz Tracker")
     .inner_size(360.0, 540.0)
     .resizable(false)
     .decorations(false)
@@ -96,79 +227,25 @@ fn toggle_panel(app: &tauri::AppHandle, icon: tauri::PhysicalPosition<f64>) {
 fn set_tray_progress(app: tauri::AppHandle, done: u32, total: u32) {
     if let Some(tray) = app.tray_by_id("main-tray") {
         let _ = tray.set_title(Some(format!("{}/{}", done, total)));
-        let _ = tray.set_tooltip(Some(&format!("Soup Tracker — {} of {} done today", done, total)));
+        let _ = tray.set_tooltip(Some(&format!("Soupz Tracker — {} of {} done today", done, total)));
     }
-}
-
-/// What the frontend needs to render an "update available" notice, without
-/// knowing anything about the update protocol.
-#[derive(Clone, serde::Serialize)]
-struct UpdateInfo {
-    version: String,
-    current_version: String,
-    notes: Option<String>,
-}
-
-/// Ask the update server whether a newer build exists. Returns `None` when we
-/// are already current. Never installs anything — that is `install_update`'s job,
-/// so the frontend can show the version and ask before touching the app.
-#[tauri::command]
-async fn check_for_update(app: tauri::AppHandle) -> Result<Option<UpdateInfo>, String> {
-    use tauri_plugin_updater::UpdaterExt;
-    let updater = app.updater().map_err(|e| e.to_string())?;
-    match updater.check().await {
-        Ok(Some(update)) => Ok(Some(UpdateInfo {
-            version: update.version.clone(),
-            current_version: update.current_version.clone(),
-            notes: update.body.clone(),
-        })),
-        Ok(None) => Ok(None),
-        Err(e) => Err(e.to_string()),
-    }
-}
-
-/// Download + install the pending update, emitting `updater://progress`
-/// ({ downloaded, total }) as bytes arrive, then relaunch into the fresh build.
-/// `app.restart()` is exactly what tauri-plugin-process's `restart` command
-/// calls internally, so no extra plugin or permission is needed.
-#[tauri::command]
-async fn install_update(app: tauri::AppHandle) -> Result<(), String> {
-    use tauri::Emitter;
-    use tauri_plugin_updater::UpdaterExt;
-
-    let updater = app.updater().map_err(|e| e.to_string())?;
-    let update = updater
-        .check()
-        .await
-        .map_err(|e| e.to_string())?
-        .ok_or_else(|| "No update available".to_string())?;
-
-    let app_for_progress = app.clone();
-    let mut downloaded: u64 = 0;
-    update
-        .download_and_install(
-            move |chunk_length, content_length| {
-                downloaded += chunk_length as u64;
-                let _ = app_for_progress.emit(
-                    "updater://progress",
-                    serde_json::json!({ "downloaded": downloaded, "total": content_length }),
-                );
-            },
-            || {},
-        )
-        .await
-        .map_err(|e| e.to_string())?;
-
-    // Relaunch into the freshly-installed bundle. Diverges (`-> !`), so this
-    // is the function's terminating expression.
-    app.restart();
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![set_tray_progress, check_for_update, install_update])
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        .invoke_handler(tauri::generate_handler![
+            set_tray_progress,
+            get_tracker_state,
+            migrate_tracker_state,
+            apply_tracker_patch,
+            merge_tracker_remote,
+            acknowledge_tracker_sync,
+            replace_tracker_account,
+            get_engine_plans,
+            upsert_engine_plan,
+            remove_engine_plan,
+        ])
         .plugin(tauri_plugin_log::Builder::default().build())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
@@ -176,12 +253,20 @@ pub fn run() {
         ))
         .setup(|app| {
             let handle = app.handle().clone();
+            let app_data = app.path().app_data_dir()?;
+            if let Ok(home) = app.path().home_dir() {
+                migrate_legacy_app_data(&home, &app_data)?;
+            }
+            let state_path = app_data.join("tracker-state.json");
+            app.manage(TrackerStateStore::open(state_path)?);
+            let engine_path = app_data.join("engine-state.json");
+            app.manage(EngineStateStore::new(engine_path));
 
             // ---- App menu: adds Settings (Cmd+,) next to the standard items ----
             let settings_item = MenuItem::with_id(app, "settings", "Settings…", true, Some("CmdOrCtrl+Comma"))?;
             let app_submenu = Submenu::with_items(
                 app,
-                "Soup Tracker",
+                "Soupz Tracker",
                 true,
                 &[
                     &PredefinedMenuItem::about(app, None, None)?,
@@ -224,7 +309,7 @@ pub fn run() {
             });
 
             // ---- Menu bar tray icon ----
-            let tray_open = MenuItem::with_id(app, "open", "Open Soup Tracker", true, None::<&str>)?;
+            let tray_open = MenuItem::with_id(app, "open", "Open Soupz Tracker", true, None::<&str>)?;
             let tray_settings = MenuItem::with_id(app, "tsettings", "Settings…", true, None::<&str>)?;
             let tray_quit = PredefinedMenuItem::quit(app, Some("Quit"))?;
             let tray_menu = Menu::with_items(app, &[&tray_open, &tray_settings, &tray_quit])?;
@@ -235,7 +320,7 @@ pub fn run() {
                         .unwrap_or_else(|_| app.default_window_icon().unwrap().clone()),
                 )
                 .icon_as_template(true)
-                .tooltip("Soup Tracker — today's plan")
+                .tooltip("Soupz Tracker — today's plan")
                 .menu(&tray_menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id().as_ref() {
@@ -276,4 +361,29 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod migration_tests {
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    #[test]
+    fn legacy_app_support_and_web_storage_copy_only_missing_files() {
+        let root = std::env::temp_dir().join(format!("soupz-legacy-{}", SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
+        let legacy_support = root.join("Library/Application Support/app.soupz.desktop");
+        let legacy_web = root.join("Library/WebKit/app.soupz.desktop/WebsiteData/LocalStorage");
+        fs::create_dir_all(&legacy_support).unwrap();
+        fs::create_dir_all(&legacy_web).unwrap();
+        fs::write(legacy_support.join("tracker-state.json"), b"legacy").unwrap();
+        fs::write(legacy_web.join("localstorage.sqlite3"), b"web").unwrap();
+        let current = root.join("Library/Application Support/com.soupz.tracker");
+        migrate_legacy_app_data(&root, &current).unwrap();
+        assert_eq!(fs::read(current.join("tracker-state.json")).unwrap(), b"legacy");
+        assert_eq!(fs::read(root.join("Library/WebKit/com.soupz.tracker/WebsiteData/LocalStorage/localstorage.sqlite3")).unwrap(), b"web");
+        fs::write(current.join("tracker-state.json"), b"current").unwrap();
+        migrate_legacy_app_data(&root, &current).unwrap();
+        assert_eq!(fs::read(current.join("tracker-state.json")).unwrap(), b"current");
+        let _ = fs::remove_dir_all(root);
+    }
 }

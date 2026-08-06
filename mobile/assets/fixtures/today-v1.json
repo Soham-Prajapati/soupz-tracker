@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-07-31",
+  "timezone": "Asia/Kolkata",
+  "tasks": [
+    { "id": "tsk_fixture_read", "title": "Read", "track": "trk_read", "done": true, "accentHex": "#4E8C3F" },
+    { "id": "tsk_fixture_walk", "title": "Walk", "track": "trk_walk", "done": false, "accentHex": "#D4553A" }
+  ]
+}

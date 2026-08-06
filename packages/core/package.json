@@ -1,0 +1,11 @@
+{
+  "name": "@soupz/tracker-core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./node-store": "./src/nodeStore.js",
+    "./schema": "./src/schema.js"
+  }
+}

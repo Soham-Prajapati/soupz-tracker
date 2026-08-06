@@ -4,7 +4,7 @@ import { viteSingleFile } from 'vite-plugin-singlefile'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // Two build targets share this config:
-//   vite build                    -> single-file bundle in dist/     (Tauri / Campaign.html)
+//   vite build                    -> single-file bundle in dist/     (Tauri desktop shell)
 //   BUILD_TARGET=web vite build   -> multi-file PWA in dist-web/      (Vercel)
 // singlefile inlines every asset into one index.html, which is incompatible
 // with a service worker (needs separate hashed files + a stable SW url), so
@@ -21,8 +21,8 @@ export default defineConfig({
           injectRegister: 'auto',
           includeAssets: ['apple-touch-icon.png'],
           manifest: {
-            name: 'Soup Tracker',
-            short_name: 'Soup Tracker',
+            name: 'Soupz Tracker',
+            short_name: 'Soupz Tracker',
             description: 'Your study plan, maintained.',
             theme_color: '#F3EADA',
             background_color: '#F2E7D3',

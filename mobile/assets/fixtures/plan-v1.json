@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "pln_fixture",
+  "title": "Read daily",
+  "kind": "habit",
+  "timezone": "Asia/Kolkata",
+  "window": { "start": "2026-07-31", "end": null },
+  "createdAt": "2026-07-31T00:00:00.000Z",
+  "updatedAt": "2026-07-31T00:00:00.000Z",
+  "revision": 1,
+  "source": "fixture",
+  "tracks": [{ "id": "trk_read", "name": "Read", "color": "#4E8C3F" }],
+  "phases": [],
+  "recurrences": [{ "id": "rec_read", "track": "trk_read", "title": "Read", "rule": { "freq": "daily" }, "from": "2026-07-31", "until": null }],
+  "schedule": [],
+  "events": []
+}

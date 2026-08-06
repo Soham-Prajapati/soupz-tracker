@@ -1,5 +1,5 @@
 {
-  "name": "sem5-campaign",
+  "name": "soupz-tracker",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -7,16 +7,20 @@
     "dev": "vite",
     "build": "vite build",
     "build:web": "BUILD_TARGET=web vite build",
+    "test": "node --test --test-concurrency=1 src/*.test.js packages/core/test/*.test.js packages/mcp/test/*.test.js",
+    "mcp": "node packages/mcp/src/cli.js",
+    "tauri": "tauri",
     "preview": "vite preview",
     "preview:web": "BUILD_TARGET=web vite build && vite preview --outDir dist-web"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@supabase/supabase-js": "^2.110.8",
     "@tauri-apps/api": "^2.11.1",
     "@tauri-apps/plugin-autostart": "^2.5.1",
-    "@tauri-apps/plugin-updater": "^2.10.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.4",

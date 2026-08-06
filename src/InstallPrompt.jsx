@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-// "Install Soup Tracker" prompt.
+// "Install Soupz Tracker" prompt.
 //
 // Listens for the browser's `beforeinstallprompt` event (Chromium/Android),
 // shows a small dismissible pill, and calls the deferred prompt on click.
@@ -80,10 +80,10 @@ export default function InstallPrompt() {
   if (!visible) return null;
 
   return (
-    <div style={S.wrap} role="dialog" aria-label="Install Soup Tracker">
+    <div style={S.wrap} role="dialog" aria-label="Install Soupz Tracker">
       <div style={S.card}>
         <div style={S.body}>
-          <div style={S.title}>Install Soup Tracker</div>
+          <div style={S.title}>Install Soupz Tracker</div>
           <div style={S.sub}>
             {iosHint
               ? 'Tap Share, then “Add to Home Screen.”'

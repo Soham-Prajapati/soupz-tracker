@@ -322,21 +322,19 @@ export function Ladle({ size = 26, c = 'var(--broth2)' }) {
   );
 }
 
-/* ---------- empty pot, for empty states ---------- */
-export function EmptyPot({ size = 120 }) {
+/* ---------- a neutral plan/list illustration for empty states ---------- */
+export function EmptyStateIllustration({ size = 120 }) {
   return (
     <svg viewBox="0 0 120 90" width={size} aria-hidden="true" filter="url(#wob)"
       fill="none" stroke="var(--rule)" strokeWidth="2.4" strokeLinecap="round">
-      <path d="M18,30 C20,66 38,82 60,82 C82,82 100,66 102,30" />
-      <path d="M10,29 q50,-7 100,0" />
-      <path d="M14,36 q-8,4 0,9" />
-      <path d="M106,36 q8,4 0,9" />
+      <rect x="25" y="10" width="70" height="70" rx="8" />
+      <path d="M46,10 v-2 a4,4 0 0 1 4,-4 h20 a4,4 0 0 1 4,4 v2" />
+      <path d="M39,31 l4,4 7,-8" />
+      <path d="M58,32 h23" />
+      <circle cx="44" cy="51" r="5" strokeDasharray="2.5 3.5" />
+      <path d="M58,51 h23" />
+      <circle cx="44" cy="68" r="5" strokeDasharray="2.5 3.5" />
+      <path d="M58,68 h16" />
     </svg>
   );
 }
-
-/* Which garnish belongs to which track. */
-export const GARNISH = {
-  dsa: 'noodle', contest: 'chili', lld: 'sprout', ai: 'star',
-  college: 'ring', aptitude: 'leaf', admin: 'dice', content: 'corn',
-};

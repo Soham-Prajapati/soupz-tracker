@@ -1,36 +1,29 @@
--- Campaign tracker: one row per completed thing, keyed by a device-shared user id.
-create table if not exists progress (
-  id          text primary key,          -- task id, e.g. p-904. Fruit Into Baskets
-  done        boolean not null default false,
-  updated_at  timestamptz not null default now()
+-- Canonical local reference for the generic per-user Tracker tables.
+-- Apply migrations/20260724000000_multiuser.sql to a fresh Supabase project.
+-- No anonymous policies or domain-specific tables belong in the product schema.
+
+create table if not exists public.progress (
+  user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),
+  id text not null,
+  done boolean not null default false,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, id)
 );
 
-create table if not exists pushed (
-  id          text primary key,          -- task id
-  to_date     date not null,
-  updated_at  timestamptz not null default now()
+create table if not exists public.pushed (
+  user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),
+  id text not null,
+  to_date date not null,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, id)
 );
 
--- Opportunities Claude can insert into later (hackathons, deadlines, programs).
-create table if not exists opportunities (
-  id          bigserial primary key,
-  title       text not null,
-  due_date    date,
-  url         text,
-  why         text,
-  kind        text default 'deadline',   -- deadline | event | admin
-  done        boolean not null default false,
-  created_at  timestamptz not null default now()
-);
+alter table public.progress enable row level security;
+alter table public.pushed enable row level security;
 
-alter table progress      enable row level security;
-alter table pushed        enable row level security;
-alter table opportunities enable row level security;
-
--- Single-user personal tracker: anon key may read/write. No auth flow to babysit.
-drop policy if exists p_all on progress;
-drop policy if exists u_all on pushed;
-drop policy if exists o_all on opportunities;
-create policy p_all on progress      for all using (true) with check (true);
-create policy u_all on pushed        for all using (true) with check (true);
-create policy o_all on opportunities for all using (true) with check (true);
+create policy p_progress on public.progress for all to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+create policy p_pushed on public.pushed for all to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
